@@ -503,146 +503,145 @@ const WEEK = {
 };
 
 /* ============================================================
-   PASTI — generati da build/gen_meals.py: kcal, proteine e costo
-   derivano tutti dagli stessi ingredienti, quindi non divergono.
-   eur = stima a prezzi da discount italiano, agosto 2026.
+   PASTI — generati da build/gen_meals.py.
+   k/p = kcal e proteine · eur = stima iniziale · tag = adatto a quale fase
    ============================================================ */
 
 const MEALS = {
   /* ---------------- COLAZIONI ---------------- */
-  c1: { s:"col", n:"Yogurt greco, avena e banana", k:416, p:29, t:2, eur:1.45,
+  c1: { s:"col", n:"Yogurt greco, avena e banana", k:416, p:29, t:2, eur:1.30, tag:["mg", "prot"], sea:"",
     ing:["200 g yogurt greco 0%", "35 g avena", "120 g banana", "10 g mandorle"],
     proc:["Versa lo yogurt in una ciotola.", "Aggiungi l'avena a crudo e mescola.", "Completa con la banana a rondelle e le mandorle tritate."] },
-  c2: { s:"col", n:"Pane e ricotta", k:314, p:16, t:3, eur:1.08,
+  c2: { s:"col", n:"Pane e ricotta", k:314, p:16, t:3, eur:0.93, tag:["light"], sea:"",
     ing:["60 g pane integrale", "100 g ricotta", "7 g miele"],
     proc:["Tosta il pane.", "Spalma la ricotta e completa con un filo di miele."] },
-  c3: { s:"col", n:"Porridge di avena e banana", k:413, p:16, t:8, eur:0.79,
+  c3: { s:"col", n:"Porridge di avena e banana", k:413, p:16, t:8, eur:0.64, tag:["mg", "carb", "comfort"], sea:"i",
     ing:["50 g avena", "200 ml latte scremato", "120 g banana", "8 g mandorle"],
     proc:["Scalda avena e latte in un pentolino a fuoco medio.", "Mescola 5 minuti finché si addensa.", "Completa con la banana a rondelle e le mandorle."] },
-  c4: { s:"col", n:"Uova e pane tostato", k:288, p:18, t:8, eur:1.06,
+  c4: { s:"col", n:"Uova e pane tostato", k:288, p:18, t:8, eur:0.91, tag:["fe", "prot"], sea:"",
     ing:["2 uova", "50 g pane integrale", "120 g pomodori"],
     proc:["Cuoci le uova in padella antiaderente senza grassi, o alla coque.", "Tosta il pane e servi col pomodoro a fette, sale e pepe."] },
-  c5: { s:"col", n:"Pancake proteici", k:430, p:26, t:12, eur:1.68,
+  c5: { s:"col", n:"Pancake proteici", k:430, p:26, t:12, eur:1.53, tag:["mg", "prot", "comfort"], sea:"i",
     ing:["35 g avena", "2 uova", "80 g ricotta", "80 g frutti di bosco surgelati"],
     proc:["Frulla avena, uovo e metà ricotta fino a una pastella liscia.", "Cuoci piccoli pancake in padella antiaderente, 2 minuti per lato.", "Servi con la ricotta rimasta e i frutti di bosco scongelati."] },
-  c6: { s:"col", n:"Cornetto e spremuta", k:641, p:27, t:5, eur:2.25,
+  c6: { s:"col", n:"Cornetto e spremuta", k:641, p:27, t:5, eur:2.10, tag:["carb"], sea:"",
     ing:["1 cornetto", "300 g arance", "170 g yogurt greco 0%"],
     proc:["È la colazione del giorno libero.", "Lo yogurt accanto non è un dettaglio: evita di arrivare a pranzo affamata dopo un cornetto da solo."] },
-  c7: { s:"col", n:"Yogurt, banana e noci", k:323, p:24, t:2, eur:1.42,
+  c7: { s:"col", n:"Yogurt, banana e noci", k:323, p:24, t:2, eur:1.27, tag:["mg", "prot"], sea:"e",
     ing:["200 g yogurt greco 0%", "120 g banana", "15 g noci"],
     proc:["Unisci tutto in una ciotola. Trenta secondi."] },
-  c8: { s:"col", n:"Pane, uova strapazzate e pomodoro", k:313, p:19, t:9, eur:1.09,
+  c8: { s:"col", n:"Pane, uova strapazzate e pomodoro", k:313, p:19, t:9, eur:0.94, tag:["fe", "prot"], sea:"",
     ing:["60 g pane integrale", "2 uova", "120 g pomodori"],
     proc:["Strapazza uova e albume in padella antiaderente a fuoco basso.", "Tosta il pane e servi col pomodoro."] },
-  c9: { s:"col", n:"Toast con salmone affumicato", k:291, p:20, t:5, eur:2.73,
+  c9: { s:"col", n:"Toast con salmone affumicato", k:291, p:20, t:5, eur:2.73, tag:["prot", "light"], sea:"e",
     ing:["60 g pane integrale", "70 g salmone affumicato", "30 g avocado", "30 g insalata", "limone"],
     proc:["Tosta il pane e schiaccia sopra l'avocado.", "Adagia il salmone, completa con rucola e limone."] },
   /* ---------------- PRANZI ---------------- */
-  p1: { s:"pra", n:"Riso, pollo e verdure", k:571, p:50, t:25, eur:1.88,
+  p1: { s:"pra", n:"Riso, pollo e verdure", k:571, p:50, t:25, eur:1.88, tag:["prot", "carb"], sea:"",
     ing:["70 g riso", "130 g petto di pollo", "200 g verdure", "7 g olio EVO", "limone, erbe"],
     proc:["Metti il riso a bollire in acqua salata, 10-12 minuti.", "Salta le verdure in padella con metà olio.", "Aggiungi il pollo a strisce e cuoci 6-7 minuti.", "Unisci il riso scolato, l'olio rimasto e il limone."] },
-  p2: { s:"pra", n:"Insalatona di tonno e borlotti", k:506, p:48, t:8, eur:2.22,
+  p2: { s:"pra", n:"Insalatona di tonno e borlotti", k:506, p:48, t:8, eur:2.22, tag:["fe", "prot"], sea:"e",
     ing:["120 g tonno al naturale", "200 g fagioli borlotti", "150 g pomodori", "40 g pane integrale", "7 g olio EVO", "limone"],
     proc:["Sciacqua e scola bene i borlotti.", "Uniscili al tonno sgocciolato e ai pomodori a spicchi.", "Condisci con olio e succo di limone: il limone moltiplica l'assorbimento del ferro dei legumi.", "Servi col pane."] },
-  p3: { s:"pra", n:"Pasta al ragù di lenticchie", k:626, p:32, t:30, eur:0.99,
+  p3: { s:"pra", n:"Pasta al ragù di lenticchie", k:626, p:32, t:30, eur:0.84, tag:["fe", "mg", "carb", "comfort"], sea:"i",
     ing:["70 g pasta integrale", "180 g lenticchie", "150 g passata di pomodoro", "50 g cipolla", "12 g grana", "7 g olio EVO"],
     proc:["Soffriggi la cipolla tritata nell'olio.", "Aggiungi le lenticchie lessate e la passata, cuoci 15 minuti.", "Lessa la pasta al dente e mantecala nel sugo.", "Completa col grana grattugiato."] },
-  p4: { s:"pra", n:"Tortellini in brodo con uovo", k:579, p:28, t:15, eur:1.95,
+  p4: { s:"pra", n:"Tortellini in brodo con uovo", k:579, p:28, t:15, eur:1.95, tag:["carb", "comfort"], sea:"i",
     ing:["120 g tortellini", "2 uova", "80 g insalata", "7 g olio EVO", "brodo vegetale"],
     proc:["Porta il brodo a bollore e cuoci i tortellini.", "A parte cuoci due uova sode, 9 minuti da bollore.", "Servi i tortellini nel brodo, le uova a spicchi e l'insalata condita."] },
-  p5: { s:"pra", n:"Bowl di riso, ceci e uova", k:664, p:33, t:20, eur:1.35,
+  p5: { s:"pra", n:"Bowl di riso, ceci e uova", k:664, p:33, t:20, eur:1.35, tag:["fe", "carb"], sea:"e",
     ing:["55 g riso", "140 g ceci", "2 uova", "180 g verdure", "6 g olio EVO", "limone, spezie"],
     proc:["Lessa il riso e lascialo intiepidire.", "Cuoci le uova sode.", "Componi la bowl a settori: riso, ceci sciacquati, uova, verdure crude.", "Condisci con olio, limone e spezie."] },
-  p6: { s:"pra", n:"Pollo al forno con patate", k:543, p:40, t:45, eur:1.67,
+  p6: { s:"pra", n:"Pollo al forno con patate", k:543, p:40, t:45, eur:1.67, tag:["prot", "carb"], sea:"i",
     ing:["180 g sovracosce di pollo", "210 g patate", "80 g insalata", "7 g olio EVO", "rosmarino"],
     proc:["Taglia le patate a spicchi, condisci con metà olio e rosmarino, inforna a 200°.", "Dopo 15 minuti aggiungi il pollo nella stessa teglia e cuoci altri 25 minuti.", "Le sovracosce costano metà del petto e restano molto più morbide al forno."] },
-  p7: { s:"pra", n:"Frittata di verdure con pane", k:470, p:28, t:15, eur:1.53,
+  p7: { s:"pra", n:"Frittata di verdure con pane", k:470, p:28, t:15, eur:1.38, tag:["fe", "prot", "light"], sea:"",
     ing:["3 uova", "180 g verdure", "60 g pane integrale", "7 g olio EVO"],
     proc:["Salta le verdure in padella finché sono morbide.", "Sbatti uova e albume, versa sopra e cuoci a fuoco basso coperto 6-7 minuti.", "Gira e completa. Servi col pane."] },
-  p8: { s:"pra", n:"Vellutata di lenticchie e crostini", k:638, p:40, t:30, eur:1.24,
+  p8: { s:"pra", n:"Vellutata di lenticchie e crostini", k:638, p:40, t:30, eur:1.24, tag:["fe", "mg", "comfort"], sea:"i",
     ing:["250 g lenticchie", "2 uova", "50 g cipolla", "50 g pane integrale", "7 g olio EVO", "carota, sedano"],
     proc:["Soffriggi la cipolla, aggiungi le lenticchie e copri di brodo.", "Cuoci 15 minuti e frulla parzialmente.", "Servi con le uova sode a spicchi e il pane tostato a crostini."] },
-  p9: { s:"pra", n:"Pasto libero", k:270, p:11, t:0, eur:6.15,
+  p9: { s:"pra", n:"Pasto libero", k:270, p:11, t:0, eur:6.00, tag:["carb"], sea:"",
     ing:["1 pizza margherita"],
     proc:["Il pasto libero della settimana. Una pizza, un piatto di pasta fuori, quello che ti va.", "È dentro i conti del piano: non è uno sgarro, è pianificato. Ma pesa 6 € sul budget settimanale — vedi la nota nella scheda Info."] },
-  p10: { s:"pra", n:"Pasta al tonno", k:494, p:42, t:20, eur:1.93,
+  p10: { s:"pra", n:"Pasta al tonno", k:494, p:42, t:20, eur:1.93, tag:["prot", "carb"], sea:"",
     ing:["70 g pasta integrale", "110 g tonno al naturale", "120 g passata di pomodoro", "100 g verdure", "7 g olio EVO", "aglio"],
     proc:["Scalda la passata con aglio e olio.", "Aggiungi il tonno sgocciolato e le verdure a cubetti, cuoci 8 minuti.", "Manteca la pasta nel sugo."] },
-  p11: { s:"pra", n:"Insalatona con salmone affumicato", k:418, p:29, t:20, eur:3.80,
-    ing:["90 g salmone affumicato", "200 g patate", "80 g insalata", "1 uov", "7 g olio EVO", "limone, aneto"],
+  p11: { s:"pra", n:"Insalatona con salmone affumicato", k:418, p:29, t:20, eur:3.80, tag:["prot", "light"], sea:"e",
+    ing:["90 g salmone affumicato", "200 g patate", "80 g insalata", "1 uovo", "7 g olio EVO", "limone, aneto"],
     proc:["Lessa le patate a cubetti e l'uovo.", "Componi con le patate tiepide, l'uovo a spicchi e il salmone a striscioline.", "Condisci con olio, limone e aneto."] },
-  p12: { s:"pra", n:"Pasta e ceci", k:631, p:30, t:25, eur:0.81,
+  p12: { s:"pra", n:"Pasta e ceci", k:631, p:30, t:25, eur:0.81, tag:["fe", "mg", "carb", "comfort"], sea:"i",
     ing:["55 g pasta", "180 g ceci", "100 g passata di pomodoro", "15 g grana", "6 g olio EVO", "aglio, rosmarino"],
     proc:["Soffriggi aglio e rosmarino nell'olio, aggiungi i ceci e la passata.", "Copri d'acqua, porta a bollore e butta la pasta direttamente dentro.", "Cuoci mescolando: il risultato deve restare cremoso. Grana alla fine."] },
-  p13: { s:"pra", n:"Cuscus con ceci e verdure", k:665, p:36, t:12, eur:1.40,
+  p13: { s:"pra", n:"Cuscus con ceci e verdure", k:665, p:36, t:12, eur:1.40, tag:["fe", "carb"], sea:"e",
     ing:["50 g cuscus", "140 g ceci", "200 g verdure", "2 uova", "6 g olio EVO", "limone, spezie"],
     proc:["Copri il cuscus con acqua bollente salata e lascia riposare 5 minuti coperto.", "Sgrana con la forchetta e unisci ceci, verdure a cubetti e l'uovo sodo.", "Condisci con olio, limone e spezie."] },
   /* ---------------- SPUNTINI ---------------- */
-  s1: { s:"spu", n:"Yogurt greco, mela e mandorle", k:252, p:20, t:1, eur:1.38,
+  s1: { s:"spu", n:"Yogurt greco, mela e mandorle", k:252, p:20, t:1, eur:1.23, tag:["prot", "mg"], sea:"",
     ing:["170 g yogurt greco 0%", "180 g mela", "10 g mandorle"],
     proc:[] },
-  s2: { s:"spu", n:"Yogurt greco e pera", k:197, p:18, t:1, eur:1.29,
+  s2: { s:"spu", n:"Yogurt greco e pera", k:197, p:18, t:1, eur:1.14, tag:["prot", "light"], sea:"",
     ing:["170 g yogurt greco 0%", "170 g pera"],
     proc:[] },
-  s3: { s:"spu", n:"Yogurt greco alla cannella", k:118, p:21, t:1, eur:1.05,
+  s3: { s:"spu", n:"Yogurt greco alla cannella", k:118, p:21, t:1, eur:1.05, tag:["prot", "light"], sea:"",
     ing:["200 g yogurt greco 0%", "cannella"],
     proc:[] },
-  s4: { s:"spu", n:"Yogurt greco e miele", k:131, p:18, t:1, eur:0.98,
+  s4: { s:"spu", n:"Yogurt greco e miele", k:131, p:18, t:1, eur:0.83, tag:["prot"], sea:"",
     ing:["170 g yogurt greco 0%", "10 g miele"],
     proc:[] },
-  s5: { s:"spu", n:"Frutta di stagione", k:94, p:1, t:1, eur:0.47,
+  s5: { s:"spu", n:"Frutta di stagione", k:94, p:1, t:1, eur:0.32, tag:["light"], sea:"e",
     ing:["180 g mela"],
     proc:[] },
-  s6: { s:"spu", n:"Ricotta e frutti di bosco", k:211, p:13, t:2, eur:1.39,
+  s6: { s:"spu", n:"Ricotta e frutti di bosco", k:211, p:13, t:2, eur:1.39, tag:["mg", "prot"], sea:"e",
     ing:["120 g ricotta", "80 g frutti di bosco surgelati", "cannella"],
     proc:[] },
-  s7: { s:"spu", n:"Cioccolato fondente e yogurt", k:225, p:17, t:1, eur:1.07,
+  s7: { s:"spu", n:"Cioccolato fondente e yogurt", k:225, p:17, t:1, eur:0.92, tag:["mg", "comfort"], sea:"i",
     ing:["150 g yogurt greco 0%", "25 g cioccolato fondente"],
     proc:["Lo spuntino della fase luteale: la voglia di dolce pianificata invece che repressa."] },
-  s9: { s:"spu", n:"Latte e banana", k:194, p:10, t:1, eur:0.64,
+  s9: { s:"spu", n:"Latte e banana", k:194, p:10, t:1, eur:0.49, tag:["mg", "carb"], sea:"",
     ing:["250 ml latte scremato", "120 g banana"],
     proc:["Il latte è la proteina più economica del supermercato: 0,38 € ogni 10 grammi. Meno di un uovo."] },
-  s10: { s:"spu", n:"Uovo sodo e frutta", k:238, p:13, t:10, eur:0.97,
+  s10: { s:"spu", n:"Uovo sodo e frutta", k:238, p:13, t:10, eur:0.82, tag:["fe", "prot"], sea:"",
     ing:["2 uova", "180 g mela"],
     proc:["Cuoci le uova 9 minuti da bollore. Falle in anticipo: durano una settimana in frigo."] },
-  s8: { s:"spu", n:"Pane e grana", k:196, p:12, t:1, eur:0.59,
+  s8: { s:"spu", n:"Pane e grana", k:196, p:12, t:1, eur:0.44, tag:["prot"], sea:"",
     ing:["40 g pane integrale", "25 g grana"],
     proc:[] },
   /* ---------------- CENE ---------------- */
-  e1: { s:"cen", n:"Frittata di verdure con pane", k:481, p:29, t:15, eur:1.54,
+  e1: { s:"cen", n:"Frittata di verdure con pane", k:481, p:29, t:15, eur:1.54, tag:["fe", "prot", "light"], sea:"",
     ing:["3 uova", "200 g verdure surgelate", "60 g pane integrale", "7 g olio EVO", "aglio"],
     proc:["Fai appassire gli spinaci surgelati in padella con l'olio e uno spicchio d'aglio.", "Sbatti uova e albume, versa sopra e cuoci a fuoco basso.", "Servi con pane e insalata."] },
-  e2: { s:"cen", n:"Trancio di salmone al forno con patate", k:586, p:37, t:35, eur:3.68,
+  e2: { s:"cen", n:"Trancio di salmone al forno con patate", k:586, p:37, t:35, eur:3.68, tag:["prot"], sea:"i",
     ing:["140 g salmone", "230 g patate", "200 g verdure surgelate", "7 g olio EVO", "limone"],
     proc:["Taglia le patate a cubetti e infornale a 200° per 20 minuti.", "Aggiungi il salmone nella stessa teglia, altri 12-14 minuti.", "Cuoci i broccoli e condisci tutto con olio e limone."] },
-  e3: { s:"cen", n:"Insalata di polipo e patate", k:459, p:47, t:50, eur:3.65,
+  e3: { s:"cen", n:"Insalata di polipo e patate", k:459, p:47, t:50, eur:3.65, tag:["fe", "prot", "light"], sea:"e",
     ing:["280 g polipo", "200 g patate", "80 g insalata", "7 g olio EVO", "limone, prezzemolo, aglio"],
     proc:["Lessa il polipo in acqua NON salata con mezzo limone: 35-40 minuti, finché la forchetta entra facile.", "Fallo intiepidire nella sua acqua — è il trucco che lo tiene morbido — poi taglialo a pezzi.", "Lessa le patate a cubetti e uniscile.", "Condisci a caldo con olio, limone, prezzemolo e aglio.", "Il polipo surgelato costa un terzo di quello fresco e viene identico: è già stato battuto dal congelamento."] },
-  e4: { s:"cen", n:"Uova strapazzate e verdure grigliate", k:456, p:28, t:15, eur:1.51,
+  e4: { s:"cen", n:"Uova strapazzate e verdure grigliate", k:456, p:28, t:15, eur:1.36, tag:["fe", "prot", "light"], sea:"e",
     ing:["3 uova", "50 g pane integrale", "200 g verdure surgelate", "7 g olio EVO"],
     proc:["Griglia le verdure a fette su una piastra rovente.", "Strapazza uova e albume a fuoco basso, mescolando: restano cremose.", "Servi con pane tostato."] },
-  e5: { s:"cen", n:"Zuppa di lenticchie con uova", k:569, p:38, t:30, eur:1.38,
+  e5: { s:"cen", n:"Zuppa di lenticchie con uova", k:569, p:38, t:30, eur:1.38, tag:["fe", "mg", "comfort"], sea:"i",
     ing:["200 g lenticchie", "2 uova", "40 g pane integrale", "150 g verdure surgelate", "6 g olio EVO", "limone"],
     proc:["Soffriggi le verdure a cubetti, aggiungi le lenticchie e copri di brodo.", "Cuoci 15 minuti.", "Servi con le uova sode e il pane. Spremi limone prima di mangiare: aiuta l'assorbimento del ferro."] },
-  e6: { s:"cen", n:"Pizza fatta in casa", k:758, p:31, t:25, eur:1.14,
+  e6: { s:"cen", n:"Pizza fatta in casa", k:758, p:31, t:25, eur:1.14, tag:["carb", "comfort"], sea:"",
     ing:["120 g farina", "90 g mozzarella", "120 g passata di pomodoro", "7 g olio EVO", "lievito, origano"],
     proc:["Impasta farina, 90 ml d'acqua tiepida, un pizzico di lievito e sale. Lascia lievitare 4-6 ore.", "Stendi, condisci con la passata e inforna al massimo per 8-10 minuti.", "Aggiungi la mozzarella negli ultimi 3 minuti.", "Costa 1,50 € invece di 6: è la singola voce che libera più budget nella settimana."] },
-  e7: { s:"cen", n:"Pollo, patate e verdure", k:533, p:56, t:35, eur:2.22,
+  e7: { s:"cen", n:"Pollo, patate e verdure", k:533, p:56, t:35, eur:2.22, tag:["prot", "carb"], sea:"",
     ing:["150 g petto di pollo", "200 g patate", "250 g verdure surgelate", "7 g olio EVO", "limone"],
     proc:["Inforna le patate a spicchi a 200° per 30 minuti.", "Cuoci il pollo in padella o insieme alle patate negli ultimi 15 minuti.", "Completa con le verdure condite con olio e limone."] },
-  e8: { s:"cen", n:"Insalata di ceci e uova", k:610, p:33, t:12, eur:1.34,
+  e8: { s:"cen", n:"Insalata di ceci e uova", k:610, p:33, t:12, eur:1.34, tag:["fe", "prot", "light"], sea:"e",
     ing:["170 g ceci", "2 uova", "150 g pomodori", "40 g pane integrale", "7 g olio EVO", "origano, limone"],
     proc:["Sciacqua i ceci e uniscili ai pomodori a cubetti.", "Aggiungi le uova sode a spicchi.", "Condisci con olio, origano e abbondante limone."] },
-  e9: { s:"cen", n:"Tentacoli di polipo grigliati", k:496, p:53, t:50, eur:3.86,
+  e9: { s:"cen", n:"Tentacoli di polipo grigliati", k:496, p:53, t:50, eur:3.86, tag:["fe", "prot"], sea:"e",
     ing:["300 g polipo", "180 g patate", "200 g verdure", "7 g olio EVO", "limone, prezzemolo"],
     proc:["Lessa il polipo 35-40 minuti e lascialo intiepidire nella sua acqua.", "Stacca i tentacoli e passali sulla piastra rovente 2-3 minuti per lato: fuori croccanti, dentro morbidi.", "Servi con patate al forno e verdure, olio e limone."] },
-  e10: { s:"cen", n:"Sovracosce al forno con verdure", k:562, p:43, t:45, eur:1.63,
+  e10: { s:"cen", n:"Sovracosce al forno con verdure", k:562, p:43, t:45, eur:1.63, tag:["prot", "carb"], sea:"i",
     ing:["180 g sovracosce di pollo", "180 g patate", "200 g verdure surgelate", "7 g olio EVO", "paprika, rosmarino"],
     proc:["Condisci le sovracosce con sale, paprika e rosmarino.", "Inforna a 200° per 40 minuti insieme alle patate a spicchi.", "Aggiungi le verdure al vapore a fine cottura."] },
-  e11: { s:"cen", n:"Frittata di patate e cipolla", k:454, p:24, t:30, eur:1.64,
+  e11: { s:"cen", n:"Frittata di patate e cipolla", k:454, p:24, t:30, eur:1.49, tag:["fe", "carb", "comfort"], sea:"i",
     ing:["3 uova", "180 g patate", "60 g cipolla", "80 g insalata", "7 g olio EVO"],
     proc:["Affetta patate e cipolla sottili e falle stufare in padella coperte, 15 minuti.", "Sbatti le uova, versale sopra e cuoci a fuoco basso.", "Gira con l'aiuto di un piatto e completa. Servi con l'insalata."] },
-  e12: { s:"cen", n:"Manzo e patate al forno", k:463, p:40, t:40, eur:2.99,
+  e12: { s:"cen", n:"Manzo e patate al forno", k:463, p:40, t:40, eur:2.99, tag:["fe", "prot"], sea:"i",
     ing:["130 g manzo magro", "250 g patate", "80 g insalata", "7 g olio EVO", "rosmarino"],
     proc:["Inforna le patate a spicchi a 200° per 30 minuti.", "Scotta il manzo in padella rovente, 3 minuti per lato.", "Fallo riposare due minuti prima di tagliarlo."] },
 };
@@ -659,26 +658,60 @@ const DAYPLAN = {
 
 const SLOTNAME = {col:"Colazione", pra:"Pranzo", spu:"Spuntino", cen:"Cena"};
 
-/* prezzi indicativi per la lista della spesa: €/kg, €/l o €/pezzo */
-const PRICES = [
-  [/salmone affumicato/i,30.0,"g"],[/salmone/i,20.0,"g"],[/polipo/i,10.0,"g"],[/tonno/i,11.0,"g"],
-  [/petto di pollo/i,8.5,"g"],[/sovracosce/i,4.5,"g"],[/fesa di tacchino/i,13.0,"g"],
-  [/macinato di tacchino/i,10.0,"g"],[/manzo/i,16.0,"g"],
-  [/uov/i,0.25,"pz"],[/latte/i,1.2,"ml"],[/yogurt greco/i,4.5,"g"],[/ricotta/i,7.0,"g"],
-  [/grana/i,13.0,"g"],[/mozzarella/i,7.0,"g"],
-  [/lenticchie/i,1.3,"g"],[/ceci/i,1.1,"g"],[/borlotti|fagioli/i,1.2,"g"],
-  [/avena/i,2.0,"g"],[/pane integrale/i,3.0,"g"],[/farina/i,1.0,"g"],[/cuscus/i,2.2,"g"],
-  [/pasta integrale/i,1.6,"g"],[/pasta/i,1.2,"g"],[/riso/i,1.8,"g"],[/patate/i,1.2,"g"],
-  [/tortellini/i,7.0,"g"],[/cornetto/i,0.8,"pz"],[/pizza margherita/i,6.0,"pz"],
-  [/olio/i,8.0,"g"],[/mandorle/i,14.0,"g"],[/noci/i,12.0,"g"],[/avocado/i,5.0,"g"],
-  [/banana/i,1.6,"g"],[/mela/i,1.8,"g"],[/pera/i,2.2,"g"],[/frutti di bosco/i,5.0,"g"],
-  [/arance|spremuta/i,1.8,"g"],[/verdure surgelate/i,2.0,"g"],[/insalata/i,5.0,"g"],
-  [/pomodor/i,2.2,"g"],[/passata/i,1.5,"g"],[/cipolla/i,1.2,"g"],[/verdur/i,2.2,"g"],
-  [/miele/i,7.0,"g"],[/cioccolato/i,10.0,"g"]
+/* ---------------- PREZZI: listino di partenza, modificabile dall'app ----------------
+   Non ho potuto verificare i prezzi Lidl di oggi (gli strumenti web mi sono stati
+   bloccati), quindi questi sono stime. La linea indicata è la marca Lidl in cui
+   di solito si trova il prodotto. Correggi tutto dalla scheda Prezzi: da quel
+   momento budget, costi dei piatti e lista della spesa usano i TUOI numeri. */
+const PRICE_LIST = [
+  {k:"petto di pollo",     e:8.50, u:"kg", m:"banco carne"},
+  {k:"sovracosce di pollo",e:4.50, u:"kg", m:"banco carne"},
+  {k:"fesa di tacchino",   e:13.0, u:"kg", m:"banco carne"},
+  {k:"macinato di tacchino",e:10.0,u:"kg", m:"banco carne"},
+  {k:"manzo magro",        e:16.0, u:"kg", m:"banco carne"},
+  {k:"salmone",            e:20.0, u:"kg", m:"banco pesce o surgelato"},
+  {k:"salmone affumicato", e:30.0, u:"kg", m:"linea pesce affumicato"},
+  {k:"tonno al naturale",  e:11.0, u:"kg", m:"Nixe"},
+  {k:"polipo",             e:10.0, u:"kg", m:"surgelati, Ocean Sea / Nixe"},
+  {k:"uova",               e:0.25, u:"pz", m:"medie, conf. da 10"},
+  {k:"yogurt greco 0%",    e:4.50, u:"kg", m:"Milbona, vasetto grande"},
+  {k:"ricotta",            e:7.00, u:"kg", m:"Milbona"},
+  {k:"grana",              e:13.0, u:"kg", m:"Lovilio"},
+  {k:"mozzarella",         e:7.00, u:"kg", m:"Lovilio"},
+  {k:"latte scremato",     e:1.20, u:"l",  m:"Milbona"},
+  {k:"avena",              e:2.00, u:"kg", m:"Crownfield, fiocchi"},
+  {k:"pane integrale",     e:3.00, u:"kg", m:"forno del punto vendita"},
+  {k:"farina",             e:1.00, u:"kg", m:"Belbake"},
+  {k:"riso",               e:1.80, u:"kg", m:"Golden Sun / Combino"},
+  {k:"pasta integrale",    e:1.60, u:"kg", m:"Combino"},
+  {k:"pasta",              e:1.20, u:"kg", m:"Combino"},
+  {k:"cuscus",             e:2.20, u:"kg", m:"Combino"},
+  {k:"tortellini",         e:7.00, u:"kg", m:"banco frigo"},
+  {k:"lenticchie",         e:1.30, u:"kg", m:"secche, poi cotte"},
+  {k:"ceci",               e:1.10, u:"kg", m:"secchi, poi cotti"},
+  {k:"fagioli borlotti",   e:1.20, u:"kg", m:"secchi, poi cotti"},
+  {k:"patate",             e:1.20, u:"kg", m:"sfuse"},
+  {k:"passata di pomodoro",e:1.50, u:"kg", m:"Baresa / Realvalle"},
+  {k:"pomodori",           e:2.20, u:"kg", m:"ortofrutta"},
+  {k:"cipolla",            e:1.20, u:"kg", m:"ortofrutta"},
+  {k:"verdure",            e:2.20, u:"kg", m:"ortofrutta di stagione"},
+  {k:"verdure surgelate",  e:2.00, u:"kg", m:"Freshona surgelati"},
+  {k:"insalata",           e:5.00, u:"kg", m:"busta pronta"},
+  {k:"banana",             e:1.60, u:"kg", m:"ortofrutta"},
+  {k:"mela",               e:1.80, u:"kg", m:"ortofrutta"},
+  {k:"pera",               e:2.20, u:"kg", m:"ortofrutta"},
+  {k:"arance",             e:1.80, u:"kg", m:"ortofrutta"},
+  {k:"frutti di bosco surgelati",e:5.00,u:"kg", m:"Freshona surgelati"},
+  {k:"avocado",            e:5.00, u:"kg", m:"ortofrutta"},
+  {k:"mandorle",           e:14.0, u:"kg", m:"Alesto"},
+  {k:"noci",               e:12.0, u:"kg", m:"Alesto"},
+  {k:"olio EVO",           e:8.00, u:"l",  m:"Primadonna"},
+  {k:"miele",              e:7.00, u:"kg", m:"Maribel"},
+  {k:"cioccolato fondente",e:10.0, u:"kg", m:"J.D. Gross 70%"},
+  {k:"cornetto",           e:0.80, u:"pz", m:"forno del punto vendita"},
+  {k:"pizza margherita",   e:6.00, u:"pz", m:"fuori casa"}
 ];
-const PZ_G = {banana:120, mela:180, pera:170, pomodoro:120, avocado:150};
 
-/* ingredienti → reparto, per la lista della spesa */
 const AISLE = [
   [/pollo|tacchino|manzo|macinato|sovracosce/i, "Carne"],
   [/salmone|tonno|polipo/i, "Pesce"],
@@ -689,6 +722,72 @@ const AISLE = [
   [/banana|mela|pera|frutti di bosco|limone|arance|spremuta/i, "Frutta e verdura"],
   [/olio|mandorle|noci|cioccolato|miele|lievito|origano|rosmarino|spezie|paprika|cannella|aglio|brodo|aneto|prezzemolo|erbe/i, "Dispensa"]
 ];
+
+/* ---------------- STAGIONI ---------------- */
+/* mese (1-12) -> clima e ortofrutta di stagione in Italia */
+const SEASON = {
+  1:{c:"i",v:"cavolfiori, verza, broccoli, cicoria, finocchi, porri, spinaci",f:"arance, mandarini, kiwi, mele, pere"},
+  2:{c:"i",v:"cavoli, broccoli, finocchi, spinaci, radicchio, carciofi",f:"arance, mandarini, kiwi, mele"},
+  3:{c:"i",v:"asparagi, carciofi, bietole, spinaci, cipollotti",f:"arance, kiwi, mele, pere"},
+  4:{c:"m",v:"asparagi, carciofi, fave, piselli, lattuga, ravanelli",f:"fragole, mele, kiwi"},
+  5:{c:"e",v:"fave, piselli, zucchine, asparagi, lattuga, cetrioli",f:"fragole, ciliegie, albicocche"},
+  6:{c:"e",v:"zucchine, melanzane, pomodori, fagiolini, peperoni",f:"albicocche, ciliegie, pesche, meloni"},
+  7:{c:"e",v:"pomodori, melanzane, peperoni, zucchine, cetrioli, fagiolini",f:"pesche, angurie, meloni, prugne, susine"},
+  8:{c:"e",v:"pomodori, melanzane, peperoni, zucchine, fagiolini",f:"pesche, angurie, meloni, fichi, uva"},
+  9:{c:"m",v:"zucchine, peperoni, funghi, bietole, spinaci",f:"uva, fichi, pere, mele, prugne"},
+ 10:{c:"m",v:"zucca, funghi, cavolfiori, broccoli, finocchi, spinaci",f:"uva, mele, pere, castagne, kiwi"},
+ 11:{c:"i",v:"zucca, cavoli, broccoli, finocchi, cicoria, porri",f:"cachi, mele, pere, arance, kiwi"},
+ 12:{c:"i",v:"cavoli, verza, broccoli, finocchi, porri, spinaci",f:"arance, mandarini, kiwi, mele"}
+};
+/* formato in cui il prodotto si trova di solito sullo scaffale, per il rilevamento prezzi */
+const FORMATS = {
+ "yogurt greco 0%":"vasetto 1 kg","ricotta":"vaschetta 250 g","grana":"conf. 200 g grattugiato",
+ "mozzarella":"conf. 125 g","latte scremato":"brick o bottiglia 1 l","avena":"conf. 500 g o 1 kg",
+ "pane integrale":"pagnotta 400-500 g","farina":"conf. 1 kg","riso":"conf. 1 kg",
+ "pasta integrale":"conf. 500 g","pasta":"conf. 500 g","cuscus":"conf. 500 g",
+ "tortellini":"conf. 250 g","lenticchie":"conf. 500 g secche","ceci":"conf. 500 g secchi",
+ "fagioli borlotti":"conf. 500 g secchi","patate":"sacchetto 1,5 o 2 kg",
+ "passata di pomodoro":"bottiglia 700 g","pomodori":"vaschetta 500 g","cipolla":"retina 1 kg",
+ "verdure":"a peso, ortofrutta","verdure surgelate":"busta 450-1000 g","insalata":"busta 150-200 g",
+ "banana":"a peso","mela":"a peso o conf. 1 kg","pera":"a peso","arance":"rete 2 kg",
+ "frutti di bosco surgelati":"busta 450 g","avocado":"a pezzo","mandorle":"conf. 200 g",
+ "noci":"conf. 200 g sgusciate","olio EVO":"bottiglia 1 l","miele":"barattolo 500 g",
+ "cioccolato fondente":"tavoletta 100-125 g","petto di pollo":"vaschetta 500-900 g",
+ "sovracosce di pollo":"vaschetta 500-900 g","fesa di tacchino":"vaschetta 400-500 g",
+ "macinato di tacchino":"vaschetta 400-500 g","manzo magro":"vaschetta 300-500 g",
+ "salmone":"conf. 200-300 g o surgelato","salmone affumicato":"conf. 100-200 g",
+ "tonno al naturale":"multipack 3-4 scatolette","polipo":"busta surgelata 500-700 g",
+ "uova":"conf. 6 o 10","cornetto":"a pezzo, forno interno","pizza margherita":"fuori casa"
+};
+
+/* grammi tipici di un pezzo, per gli ingredienti contati a unità */
+const PZ_G = {banana:120, mela:180, pera:170, pomodoro:120, avocado:150, pizza:350, cornetto:55};
+
+/* ---------------- FERRO ---------------- */
+/* mg per 100 g (o per pezzo dove indicato "pz"). Valori da tabelle di composizione.
+   Il ferro dei vegetali (non-eme) si assorbe al 2-10%, quello di carne e pesce
+   (eme) al 15-35%: per questo la vitamina C nello stesso pasto conta tanto. */
+const IRON = [
+  [/polipo/i, 5.3, "eme"], [/manzo/i, 2.6, "eme"], [/sovracosce/i, 1.0, "eme"],
+  [/petto di pollo/i, 0.4, "eme"], [/tacchino/i, 1.4, "eme"],
+  [/tonno/i, 1.3, "eme"], [/salmone affumicato/i, 1.0, "eme"], [/salmone/i, 0.3, "eme"],
+  [/uov/i, 0.9, "pz"],
+  [/lenticchie/i, 3.3, "veg"], [/ceci/i, 2.9, "veg"], [/borlotti|fagioli/i, 2.1, "veg"],
+  [/avena/i, 4.7, "veg"], [/pane integrale/i, 2.5, "veg"], [/pasta integrale/i, 3.1, "veg"],
+  [/cuscus/i, 1.1, "veg"], [/pasta/i, 1.4, "veg"], [/riso/i, 0.8, "veg"], [/farina/i, 1.2, "veg"],
+  [/tortellini/i, 1.5, "veg"], [/cornetto/i, 1.5, "veg"], [/pizza/i, 1.0, "veg"],
+  [/cioccolato/i, 11.9, "veg"], [/mandorle/i, 3.7, "veg"], [/noci/i, 2.9, "veg"],
+  [/spinaci/i, 2.7, "veg"], [/verdure surgelate/i, 1.4, "veg"], [/verdur/i, 0.8, "veg"],
+  [/insalata|rucola/i, 0.9, "veg"], [/patate/i, 0.8, "veg"], [/passata/i, 1.0, "veg"],
+  [/pomodor/i, 0.3, "veg"], [/cipolla/i, 0.2, "veg"], [/avocado/i, 0.6, "veg"],
+  [/frutti di bosco/i, 0.6, "veg"], [/banana/i, 0.3, "veg"], [/pera/i, 0.2, "veg"],
+  [/mela|arance/i, 0.1, "veg"],
+  [/grana/i, 0.7, "veg"], [/ricotta/i, 0.4, "veg"], [/mozzarella/i, 0.2, "veg"],
+  [/yogurt/i, 0.1, "veg"], [/miele/i, 0.4, "veg"], [/latte/i, 0.0, "veg"]
+];
+/* ingredienti che portano vitamina C nello stesso pasto: moltiplicano l'assorbimento */
+const VIT_C = /limone|pomodor|passata|peperon|arance|spremuta|rucola|broccoli|cavol|fragole|kiwi|prezzemolo/i;
+const IRON_TARGET = 18;   /* mg al giorno, riferimento per donna in età fertile */
 
 </script>
 <script>
@@ -706,7 +805,7 @@ let view = "oggi";
 
 function load(){
   try{ const r = localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){}
-  return { cycles:[], done:{}, log:{}, meals:{}, meas:[], phaseOverride:null };
+  return { cycles:[], done:{}, log:{}, meals:{}, meas:[], phaseOverride:null, goal:"cut", prices:{}, shop:{} };
 }
 function migrate(){
   if(!st.cycles) st.cycles=[];
@@ -731,16 +830,26 @@ function parseD(s){ const p=s.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]);
 function dayRec(key){ if(!st.done[key]) st.done[key]={ex:{},mob:{},steps:false}; const r=st.done[key];
   if(!r.ex)r.ex={}; if(!r.mob)r.mob={}; return r; }
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove("on"),1900); }
+function fmtIt(ks){ const p=ks.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
+function fmtItShort(ks){ const p=ks.split("-"); return p[2]+"/"+p[1]; }
+function parseIt(v){                      /* "16/08/2026" -> "2026-08-16" */
+  const m=String(v||"").match(/^(\d{1,2})\D(\d{1,2})\D(\d{2,4})$/);
+  if(!m) return null;
+  let y=+m[3]; if(y<100) y+=2000;
+  const d=+m[1], mo=+m[2];
+  if(mo<1||mo>12||d<1||d>31) return null;
+  return y+"-"+String(mo).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+}
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 /* ---------------- ciclo: calendario, pensato per cicli irregolari ----------------
    Nessuna durata fissa. L'app misura i TUOI intervalli reali dai giorni che segni,
    e dichiara sempre quanto è affidabile la stima invece di fingere precisione.     */
 const PHASES = {
-  mes:{n:"Fase mestruale",  cls:"pill-a", kcal:1550, adv:"Energia bassa e ferro in calo. Tieni la seduta ma taglia il volume del 20–30%: due giri invece di tre. Se stai male, sostituiscila con una camminata — il movimento leggero riduce i crampi, non li peggiora."},
-  fol:{n:"Fase follicolare",cls:"pill-g", kcal:1550, adv:"La finestra migliore del mese: recuperi bene e tolleri più carico. È qui che alzi i pesi, provi il gradino successivo dei push-up e aggiungi il quarto giro."},
-  ovu:{n:"Fase ovulatoria", cls:"pill-b", kcal:1650, adv:"Picco di forza, ma anche picco di lassità dei legamenti. Approfitta della forza sui movimenti controllati e togli i salti: squat normali invece degli squat jump, e negli affondi cura l'atterraggio."},
-  lut:{n:"Fase luteale",    cls:"pill-p", kcal:1800, adv:"Mezzo grado di temperatura in più rende tutto più faticoso: mantieni la frequenza ma non aspettarti record. Le calorie salgono a 1.800, non è un cedimento. Sulla bilancia stai guardando acqua, ignorala."}
+  mes:{n:"Fase mestruale",  cls:"pill-a", food:"In questi giorni il piano spinge su <b>ferro</b> (legumi, uova, manzo, spinaci) sempre abbinato a <b>vitamina C</b>, e su <b>magnesio</b> (avena, mandorle, cacao) che attenua i crampi. Piatti caldi e poco voluminosi, perché la digestione è più pigra.", adv:"Energia bassa e ferro in calo. Tieni la seduta ma taglia il volume del 20–30%: due giri invece di tre. Se stai male, sostituiscila con una camminata — il movimento leggero riduce i crampi, non li peggiora."},
+  fol:{n:"Fase follicolare",cls:"pill-g", food:"È la fase in cui gestisci meglio i carboidrati e li usi meglio come benzina: qui il piano mette i piatti più ricchi di pasta, riso e cuscus, e li fa cadere vicino agli allenamenti.", adv:"La finestra migliore del mese: recuperi bene e tolleri più carico. È qui che alzi i pesi, provi il gradino successivo dei push-up e aggiungi il quarto giro."},
+  ovu:{n:"Fase ovulatoria", cls:"pill-b", food:"Energia al massimo e appetito regolare: proteine alte e piatti normali. Niente di speciale da correggere, approfittane.", adv:"Picco di forza, ma anche picco di lassità dei legamenti. Approfitta della forza sui movimenti controllati e togli i salti: squat normali invece degli squat jump, e negli affondi cura l'atterraggio."},
+  lut:{n:"Fase luteale",    cls:"pill-p", food:"Le calorie salgono e il piano vira su <b>magnesio</b> e carboidrati complessi, che alzano la serotonina e spengono la voglia di dolce invece di combatterla. Sale ridotto: limita la ritenzione.", adv:"Mezzo grado di temperatura in più rende tutto più faticoso: mantieni la frequenza ma non aspettarti record. Le calorie salgono a 1.800, non è un cedimento. Sulla bilancia stai guardando acqua, ignorala."}
 };
 const DAYMS = 86400000;
 const FLOW_DEFAULT = 5;   /* durata presunta finché non ne conosco una tua */
@@ -791,9 +900,16 @@ function cstats(){
     dur: conf.length?Math.round(conf.reduce((a,x)=>a+dlen(x.s,x.e),0)/conf.length):null,
     nconf: conf.length };
 }
+function kcalFor(phaseKey){
+  const g=goal();
+  const v = g.base + (phaseKey?(g.delta[phaseKey]||0):0) + (st.kcalAdj||0);
+  return Math.max(1400, v);                              /* il pavimento resta un limite */
+}
+function protFor(){ return goal().prot; }
 function mk(key,day,conf,extra){
   const p=PHASES[key];
-  return {known:true, key:key, day:day, conf:conf, kcal:p.kcal, n:p.n, cls:p.cls, adv:(extra?extra+" ":"")+p.adv};
+  return {known:true, key:key, day:day, conf:conf, kcal:kcalFor(key), n:p.n, cls:p.cls,
+          food:p.food, adv:(extra?extra+" ":"")+p.adv};
 }
 function cyc(d){
   const S=cstats(), ks=k(d);
@@ -805,11 +921,11 @@ function cyc(d){
     return mk("mes",day,"certa","Giorno di ciclo che hai registrato.");
   }
   const past=S.g.filter(c=> c.s<=ks);
-  if(!past.length) return {known:false,kcal:1650,n:"Ciclo da registrare",cls:"pill-b",day:null,key:null,conf:null,
+  if(!past.length) return {known:false,kcal:kcalFor(null),n:"Ciclo da registrare",cls:"pill-b",day:null,key:null,conf:null,
     adv:"Sul calendario qui sotto tocca il primo giorno del ciclo, poi l'ultimo. Puoi farlo anche a ritroso, se te li ricordi. Da due cicli in poi l'app calcola i tuoi intervalli reali e stima le fasi; fino ad allora l'obiettivo resta 1.650 kcal fissi."};
   const last=past[past.length-1];
   const day=dlen(last.s,ks);
-  if(S.lens.length<2) return {known:true,kcal:1650,n:"Fase non stimabile",cls:"pill-b",day:day,key:null,conf:"nessuna",
+  if(S.lens.length<2) return {known:true,kcal:kcalFor(null),n:"Fase non stimabile",cls:"pill-b",day:day,key:null,conf:"nessuna",
     adv:"Ho un solo ciclo registrato: per stimare le fasi servono almeno due intervalli, e con un ciclo irregolare anche di più. Continua a segnare. Intanto usa l'autoregolazione: senti il carico al primo esercizio e aggiusta in base a come esce, invece di seguire il calendario."};
   /* La fase luteale dura ~12–14 giorni ed è la parte stabile anche nei cicli irregolari:
      l'ovulazione si stima all'indietro dalla lunghezza dei tuoi cicli, non in avanti.
@@ -875,12 +991,17 @@ function renderOggi(){
       <div class="card"><div class="row"><h3 style="font-size:20px">${esc(W.t)}</h3>
       <span class="xs">${done}/${tot}</span></div>
       <div class="pbar"><i style="width:${Math.round(done/tot*100)}%"></i></div>
-      <div class="xs" style="margin-top:10px">${esc(W.note)}</div>`;
+      <div class="xs" style="margin-top:10px">${esc(W.note)}</div>
+      <div class="xs" style="margin-top:6px">Taglio dell'obiettivo: ${esc(goal().gym)}</div>`;
     if(c.key==="ovu" && W.items.some(i=>i[0]==="squat"||i[0]==="affondi"))
       h += `<div class="callout p" style="margin-bottom:2px"><b>Sei nella finestra ovulatoria.</b> Niente salti oggi: squat normali al posto degli squat jump, e negli affondi appoggia il piede invece di rimbalzare.</div>`;
     if(c.key==="mes")
-      h += `<div class="callout" style="margin-bottom:2px"><b>Fase mestruale.</b> Fai due giri invece di tre. Se oggi non ce la fai, una camminata vale più di una seduta saltata per sensi di colpa.</div>`;
-    h += `<div style="margin-top:6px">` + W.items.map(it=>exRow(it[0],it[1],key,rec,ph)).join("") + `</div></div>`;
+      h += `<div class="callout w" style="margin-bottom:2px"><b>Fase mestruale: ho già tolto una serie da ogni esercizio.</b> I numeri che vedi sono quelli ridotti. Se oggi non ce la fai, una camminata vale più di una seduta saltata per sensi di colpa.</div>`;
+    if(c.key==="fol")
+      h += `<div class="callout g" style="margin-bottom:2px"><b>Fase follicolare: è la settimana per spingere.</b> Prova ad aggiungere 2 ripetizioni per serie, o il gradino successivo nella progressione dei push-up.</div>`;
+    if(c.key==="lut")
+      h += `<div class="callout p" style="margin-bottom:2px"><b>Fase luteale.</b> Serie e ripetizioni restano, ma scendi del 5–10% col carico e allungha i recuperi: a parità di lavoro ti sembrerà più faticoso perché la temperatura corporea è più alta.</div>`;
+    h += `<div style="margin-top:6px">` + W.items.map(it=>exRow(it[0],doseFor(it[1],c.key),key,rec,ph)).join("") + `</div></div>`;
   } else if(plan.type === "zona2"){
     h += `<div class="sec-t">Cardio</div><div class="card">
       <h3 style="font-size:20px">Zona 2 · 30–40 minuti</h3>
@@ -916,6 +1037,12 @@ function chk(id,on,label){
     <span class="exname"><b style="${on?"opacity:.5;text-decoration:line-through":""}">${esc(label)}</b></span></div>`;
 }
 
+function doseFor(dose, phk){
+  if(phk==="mes"){                                   /* volume ridotto */
+    return dose.replace(/^(\d+)( × )/, (m,n,x)=> (Math.max(2,+n-1))+x);
+  }
+  return dose;
+}
 function exRow(id, dose, key, rec, ph, mobIdx){
   const ex = EX[id]; if(!ex) return "";
   const isMob = mobIdx!==undefined;
@@ -949,7 +1076,7 @@ function prevLog(id, key){
   const ks = Object.keys(st.log).filter(x=>x<key && st.log[x][id] && (st.log[x][id].w||st.log[x][id].r)).sort();
   if(!ks.length) return null;
   const kk = ks[ks.length-1], v = st.log[kk][id], d = parseD(kk);
-  return { when: d.getDate()+" "+MONTHS[d.getMonth()].slice(0,3), txt: [v.w,v.r].filter(Boolean).join(" × ") };
+  return { when: fmtItShort(kk), txt: [v.w,v.r].filter(Boolean).join(" × ") };
 }
 function tgl(id, mobIdx){
   const rec = dayRec(k(cur));
@@ -970,19 +1097,38 @@ function setLog(id, f, v){
 }
 
 /* ---------------- vista CIBO ---------------- */
-function dayMeals(key, dow){ return Object.assign({}, DAYPLAN[dow], st.meals[key]||{}); }
+const SPU_ALT = {s1:"s9",s2:"s6",s3:"s1",s4:"s10",s5:"s3",s6:"s2",s7:"s8",s8:"s7",s9:"s4",s10:"s5"};
+function dayMeals(key, dow){
+  const m = Object.assign({}, DAYPLAN[dow], st.meals[key]||{});
+  if(slots().indexOf("spu2")>=0 && !m.spu2) m.spu2 = SPU_ALT[m.spu] || "s3";
+  return m;
+}
 function renderCibo(){
   const key=k(cur), dow=cur.getDay(), c=cyc(cur), sel=dayMeals(key,dow);
-  const ids=["col","pra","spu","cen"];
-  let tk=0, tp=0, te=0; ids.forEach(s=>{ const m=MEALS[sel[s]]; if(m){tk+=m.k; tp+=m.p; te+=m.eur;} });
+  const ids=slots();
+  let tk=0, tp=0, te=0; ids.forEach(s=>{ const m=MEALS[sel[s]]; if(m){tk+=m.k; tp+=m.p; te+=mealCost(sel[s]);} });
   const diff = tk - c.kcal;
+  const FE = dayIron(sel);
   let h = `<div class="card"><div class="row">
       <div><div class="xs">Totale di oggi</div><div style="font-family:var(--serif);font-size:30px;font-weight:400;line-height:1.06;letter-spacing:-.02em">${tk} <span style="font-size:14px;font-weight:600" class="muted">kcal</span></div></div>
       <div style="text-align:center"><div class="xs">Proteine</div><div style="font-family:var(--serif);font-size:30px;font-weight:400;line-height:1.06;letter-spacing:-.02em">${tp} <span style="font-size:14px;font-weight:600" class="muted">g</span></div></div>
       <div style="text-align:right"><div class="xs">Costo</div><div style="font-family:var(--serif);font-size:30px;font-weight:400;line-height:1.06;letter-spacing:-.02em;color:${te>budget()/30?"var(--clay)":"var(--ok)"}">${eur(te)}</div></div></div>
     <div class="pbar"><i style="width:${Math.min(100,Math.round(tk/c.kcal*100))}%;background:${Math.abs(diff)<130?"var(--ok)":"var(--clay)"}"></i></div>
+    <div class="row" style="margin-top:13px;padding-top:12px;border-top:1px solid var(--line)">
+      <span class="xs">Ferro di oggi</span>
+      <span class="xs"><b style="color:${FE.mg>=IRON_TARGET*0.85?"var(--ok)":"var(--clay)"};font-size:14px">${FE.mg} mg</b> su ${IRON_TARGET} · ${FE.withC} pasti con vitamina C</span></div>
+    <div class="xs" style="margin-top:6px">${FE.mg>=IRON_TARGET*0.85
+      ? "Sei a posto. Ricorda che il limone e il pomodoro nei piatti non sono decorazione: senza vitamina C il ferro dei legumi si assorbe a fatica."
+      : "Sotto il riferimento. Nella scheda Cibo cerca i piatti con la spunta <em>ricco di ferro</em>: con la tua storia di ferro basso questo numero conta più delle calorie."}</div>
     <div class="xs" style="margin-top:8px">Obiettivo di oggi <b style="color:var(--ink)">${c.kcal} kcal</b> · ${c.known?esc(c.n).toLowerCase():"nessuna fase impostata"}${Math.abs(diff)<130?" — sei in linea.":(diff>0?` — sei ${diff} kcal sopra. Va bene se compensi nei prossimi giorni: conta la media della settimana.`:` — sei ${-diff} kcal sotto. Se hai fame, aggiungi uno spuntino.`)}</div></div>`;
 
+  const SS=season();
+  h += `<div class="callout g"><b>Siamo in ${seasonName()}.</b> ${SS.c==="e"
+    ? "Col caldo il piano vira su piatti freddi e poco fornello, e l'acqua sale a 2,5–3 litri: sudando perdi anche sodio e potassio, quindi non ridurre troppo il sale e mangia frutta acquosa. Allenati la mattina presto o dopo il tramonto."
+    : SS.c==="i" ? "Col freddo tornano avanti zuppe, forno e piatti caldi — più sazianti a parità di calorie. Cuoci una volta per due giorni: il forno acceso rende, e mangi caldo senza rifare tutto."
+    : "Mezza stagione: nessuna preferenza particolare, il piano usa tutto il ricettario."}
+    <br><br><b>Di stagione adesso:</b> ${SS.v}. <b>Frutta:</b> ${SS.f}. Comprare di stagione è l'unico modo per pagare l'ortofrutta poco e mangiarla buona: fuori stagione costa il doppio e sa di niente.</div>`;
+  if(c.food) h += `<div class="callout ${c.key==="lut"?"p":c.key==="mes"?"w":"g"}"><b>Come mangi in ${esc(c.n.toLowerCase())}.</b> ${c.food}</div>`;
   if(c.key==="lut") h += `<div class="callout p"><b>Fase luteale: le calorie salgono a 1.800.</b> L'appetito in più è fisiologia misurata, non mancanza di disciplina — ed è la ragione per cui le diete a calorie fisse falliscono. Aggiungi lo spuntino extra: <b>Cioccolato fondente e yogurt</b>, lo trovi tra le alternative dello spuntino.</div>`;
   if(c.key==="fol"||c.key==="mes") h += `<div class="callout g"><b>Calorie a 1.550 in questa fase.</b> È il momento in cui il deficit costa poco: l'appetito è basso e il corpo collabora. Se uno spuntino ti sembra di troppo, saltalo pure.</div>`;
 
@@ -990,8 +1136,11 @@ function renderCibo(){
     const m = MEALS[sel[s]]; if(!m) return;
     h += `<div class="mcard" id="mc-${s}">
       <div class="mhead" onclick="opm('${s}')">
-        <div><div class="mslot">${SLOTNAME[s]}</div><div class="mname">${esc(m.n)}</div></div>
-        <div class="mmac">${m.k} kcal<br>${m.p} g prot<br><b style="color:var(--ink-soft)">${eur(m.eur)}</b>${m.t?`<br>${m.t} min`:""}</div>
+        <div><div class="mslot">${SLOTNAME[s]}</div><div class="mname">${esc(m.n)}</div>
+          ${(()=>{const wp=whyPhase(sel[s],c.key), ws=whySeason(sel[s]), neg=seasonScore(sel[s])<0;
+            const parts=[]; if(wp) parts.push("✓ "+wp); if(ws) parts.push((neg?"⚠ ":"✓ ")+ws);
+            return parts.length?`<div class="xs" style="margin-top:4px;color:${neg?"var(--clay)":"var(--ink-soft)"}">${esc(parts.join(" · "))}</div>`:"";})()}</div>
+        <div class="mmac">${m.k} kcal<br>${m.p} g prot<br>${mealIron(sel[s]).mg>=1.5?`<span style="color:var(--ink-soft)">${mealIron(sel[s]).mg} mg Fe</span><br>`:""}<b style="color:var(--ink-soft)">${eur(mealCost(sel[s]))}</b>${m.t?`<br>${m.t} min`:""}</div>
       </div>
       <div class="mbody" style="display:none">
         <ul class="ingl">${m.ing.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
@@ -1002,10 +1151,10 @@ function renderCibo(){
         <button onclick="opa('${s}')">Cambia piatto</button>
       </div>
       <div class="alt" id="alt-${s}" style="display:none">
-        ${Object.keys(MEALS).filter(id=>MEALS[id].s===s).map(id=>{
+        ${Object.keys(MEALS).filter(id=>MEALS[id].s===s).sort((x,y)=>(seasonScore(y)*2+phaseScore(y,c.key))-(seasonScore(x)*2+phaseScore(x,c.key))||mealCost(x)-mealCost(y)).map(id=>{
           const a=MEALS[id];
           return `<div class="altitem ${id===sel[s]?"cur":""}" onclick="setMeal('${s}','${id}')">
-            <div><b style="font-size:14px">${esc(a.n)}</b><div class="xs">${a.t?a.t+" min":"1 min"} · <b style="color:${a.eur>2.5?"var(--clay)":"var(--ok)"}">${eur(a.eur)}</b></div></div>
+            <div><b style="font-size:14px">${esc(a.n)}</b><div class="xs">${a.t?a.t+" min":"1 min"} · <b style="color:${mealCost(id)>2.5?"var(--clay)":"var(--ok)"}">${eur(mealCost(id))}</b>${whyPhase(id,c.key)?" · ✓ "+esc(whyPhase(id,c.key)):""}</div></div>
             <div class="mmac">${a.k} kcal<br>${a.p} g</div></div>`;
         }).join("")}
       </div></div>`;
@@ -1028,7 +1177,7 @@ function renderProg(){
   </div>`;
 
   const OP=openCycle();
-  if(OP) h += `<div class="callout"><b>Ciclo in corso dal ${parseD(OP.s).getDate()} ${MONTHS[parseD(OP.s).getMonth()].slice(0,3)}.</b> Quando finisce, tocca l'ultimo giorno sul calendario. Nel frattempo lo sto considerando di ${avgFlow()} giorni; se non lo chiudi entro ${GRACE} giorni dalla fine presunta, lo convalido io a quella durata.</div>`;
+  if(OP) h += `<div class="callout"><b>Ciclo in corso dal ${fmtIt(OP.s)}.</b> Quando finisce, tocca l'ultimo giorno sul calendario. Nel frattempo lo sto considerando di ${avgFlow()} giorni; se non lo chiudi entro ${GRACE} giorni dalla fine presunta, lo convalido io a quella durata.</div>`;
   if(cycles().some(c=>c.auto)) h += `<div class="callout"><b>Alcuni cicli li ho chiusi io.</b> Sono quelli tratteggiati sul calendario: non avevi segnato la fine, quindi ho usato la durata presunta. Non entrano nel calcolo della tua durata media — toccali per correggerli.</div>`;
   h += `<div class="card">`;
   if(!S.lens.length){
@@ -1039,7 +1188,7 @@ function renderProg(){
       <tr><td>Intervallo medio</td><td class="n"><b>${S.avg} giorni</b></td></tr>
       <tr><td>Il più corto / il più lungo</td><td class="n"><b>${S.min} – ${S.max}</b></td></tr>
       <tr><td>Durata media del flusso<br><span class="xs">solo dai cicli che hai chiuso tu (${S.nconf})</span></td><td class="n"><b>${S.dur?S.dur+" giorni":"—"}</b></td></tr>
-      ${nw?`<tr><td>Prossimo ciclo atteso</td><td class="n"><b>${nw.lo.getDate()} ${MONTHS[nw.lo.getMonth()].slice(0,3)} – ${nw.hi.getDate()} ${MONTHS[nw.hi.getMonth()].slice(0,3)}</b></td></tr>`:""}
+      ${nw?`<tr><td>Prossimo ciclo atteso</td><td class="n"><b>${fmtItShort(k(nw.lo))} – ${fmtItShort(k(nw.hi))}</b></td></tr>`:""}
     </tbody></table>`;
     if(S.lens.length<3)
       h += `<div class="callout"><b>Stima ancora provvisoria.</b> Con ${S.lens.length} intervallo${S.lens.length>1?"i":""} registrat${S.lens.length>1?"i":"o"} il margine d'errore è alto. Da tre o quattro cicli in poi diventa utile davvero: continua a segnare.</div>`;
@@ -1052,9 +1201,10 @@ function renderProg(){
   }
   h += `<div class="xs">Fase di oggi: <b style="color:var(--ink)">${esc(c0.n)}</b>${c0.day?" · giorno "+c0.day:""}${c0.conf?" · affidabilità "+c0.conf:""}</div></div>`;
 
+  h += `<div class="sec-t">Il fabbisogno si corregge sui tuoi dati</div>${trendCard()}`;
   h += `<div class="sec-t">Misure</div><div class="card">
     <div class="xs" style="margin-bottom:11px">Girovita e fianchi ogni due settimane, con un metro da sarta. Sono le misure che raccontano meglio quello che cerchi: scendono spesso anche quando il peso è fermo. Il peso è facoltativo — se non hai la bilancia, lascialo vuoto.</div>
-    <div class="f"><label>Data</label><input type="date" id="md" value="${k(new Date())}"></div>
+    <div class="f"><label>Data (gg/mm/aaaa)</label><input type="text" id="md" inputmode="numeric" placeholder="gg/mm/aaaa" value="${fmtIt(k(new Date()))}"></div>
     <div class="g2">
       <div class="f"><label>Girovita (cm)</label><input type="number" step="0.5" id="mw" inputmode="decimal"></div>
       <div class="f"><label>Fianchi (cm)</label><input type="number" step="0.5" id="mh" inputmode="decimal"></div>
@@ -1066,12 +1216,20 @@ function renderProg(){
   else h += `<div class="callout"><b>Servono almeno due misurazioni</b> perché compaia il grafico. Fai la prima oggi: è il tuo punto zero, e tra dodici settimane sarà la cosa più soddisfacente da guardare.</div>`;
 
   if(ms.length) h += `<div class="card" style="padding-top:8px"><table><thead><tr><th>Data</th><th class="n">Vita</th><th class="n">Fianchi</th><th class="n">Peso</th><th></th></tr></thead><tbody>` +
-    ms.slice().reverse().map((m,i)=>{ const d=parseD(m.d);
-      return `<tr><td>${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</td><td class="n">${m.w?m.w+" cm":"—"}</td><td class="n">${m.h?m.h+" cm":"—"}</td><td class="n">${m.p?m.p+" kg":"—"}</td>
+    ms.slice().reverse().map((m,i)=>{
+      return `<tr><td>${fmtIt(m.d)}</td><td class="n">${m.w?m.w+" cm":"—"}</td><td class="n">${m.h?m.h+" cm":"—"}</td><td class="n">${m.p?m.p+" kg":"—"}</td>
       <td class="n"><button onclick="delMeas('${m.d}')" style="color:var(--muted);padding:0 4px">✕</button></td></tr>`;
     }).join("") + `</tbody></table></div>`;
 
-  h += `<div class="sec-t">I tuoi dati</div>
+  const rw=rampWeeks();
+  h += `<div class="sec-t">Legumi</div><div class="card">
+    <div class="sm">Il piano usa legumi 4-5 volte a settimana: sono la proteina più economica che esista e la migliore fonte di ferro vegetale. Ma se non li hai mai mangiati così spesso, partire subito a pieno regime vuol dire due settimane di gonfiore e la voglia di mollare tutto. Il problema non sei tu: è la flora intestinale, che ha bisogno di due o tre settimane per attrezzarsi.</div>
+    ${rw ? `<div class="callout g" style="margin-bottom:0"><b>Settimana ${rw} di 3.</b> Il pianificatore sta tenendo i legumi a un massimo di ${legumeCap()} ${legumeCap()===1?"pasto":"pasti"} a settimana e sale da solo. ${rw===1?"Questa settimana porzioni piccole, circa metà di quelle scritte.":rw===2?"Puoi tornare alle porzioni piene.":"Ultima settimana di rodaggio, poi via libera."}</div>`
+      : `<div class="callout" style="margin-bottom:0"><b>Tre regole che fanno la differenza.</b> Se usi i secchi, ammollali 12 ore e <b>butta l'acqua dell'ammollo</b>, dove finiscono gli zuccheri che fermentano. Cuocili con <b>alloro, cumino o semi di finocchio</b>, che riducono davvero il gonfiore. E parti dalle <b>vellutate</b>: frullati sono molto più gentili dei ceci interi.
+        <br><br><button class="btn wide" style="margin-top:8px" onclick="startRamp()">Avvia le tre settimane di rodaggio</button></div>` }
+  </div>
+
+  <div class="sec-t">I tuoi dati</div>
     <div class="callout w"><b>Attenzione, leggi questo.</b> Tutto quello che segni resta salvato nella memoria del browser di <em>questo</em> dispositivo. Non passa da nessun server — nessuno lo vede, nemmeno chi ha scritto l'app. Ma questo vuol dire due cose: il telefono e il computer <b>non sono collegati</b> tra loro, e se cancelli i dati di navigazione del browser i progressi spariscono. Esporta un backup ogni tanto, e usa un solo dispositivo come quello "ufficiale".</div>
     <div class="g2"><button class="btn sec" onclick="expData()">Esporta backup</button>
     <button class="btn sec" onclick="document.getElementById('imp').click()">Importa backup</button></div>
@@ -1135,7 +1293,7 @@ function calendar(){
     </div>`;
 }
 function addMeas(){
-  const d=document.getElementById("md").value; if(!d) return toast("Manca la data");
+  const d=parseIt(document.getElementById("md").value); if(!d) return toast("Data non valida: usa gg/mm/aaaa");
   const w=parseFloat(document.getElementById("mw").value), h=parseFloat(document.getElementById("mh").value), p=parseFloat(document.getElementById("mp").value);
   if(isNaN(w)&&isNaN(h)&&isNaN(p)) return toast("Inserisci almeno una misura");
   st.meas = (st.meas||[]).filter(m=>m.d!==d);
@@ -1164,6 +1322,58 @@ function chart(ms){
     series.map(s=>`<span class="xs"><span style="display:inline-block;width:9px;height:9px;border-radius:9px;background:${s[2]};margin-right:5px"></span>${s[1]}</span>`).join("")+`</div>`;
   return g;
 }
+function trendCheck(){
+  const ms=(st.meas||[]).filter(m=>m.w!=null).sort((a,b)=>a.d<b.d?-1:1);
+  if(ms.length<2) return null;
+  const a=ms[0], b=ms[ms.length-1];
+  const days=Math.round((parseD(b.d)-parseD(a.d))/DAYMS);
+  if(days<18) return {short:true, days:days};
+  const dW=b.w-a.w, perWeek=Math.round(dW/days*7*100)/100;
+  const g=goalKey();
+  let verdict, action=null;
+  if(g==="cut"){
+    if(perWeek<=-0.15 && perWeek>=-0.7){ verdict="giusto"; }
+    else if(perWeek>-0.15){ verdict="lento"; action=-150; }
+    else { verdict="veloce"; action=+150; }
+  } else if(g==="recomp"){
+    if(Math.abs(perWeek)<=0.2) verdict="giusto";
+    else if(perWeek>0.2){ verdict="sale"; action=-150; }
+    else { verdict="scende"; action=+150; }
+  } else {
+    if(perWeek>=0.1 && perWeek<=0.4) verdict="giusto";
+    else if(perWeek<0.1){ verdict="lento"; action=+200; }
+    else { verdict="veloce"; action=-150; }
+  }
+  return {days:days, perWeek:perWeek, verdict:verdict, action:action, wA:a.w, wB:b.w, from:a.d, to:b.d};
+}
+function applyTrend(delta){
+  st.kcalAdj=(st.kcalAdj||0)+delta; _combos=null; save(); render();
+  toast((delta<0?"Tolte ":"Aggiunte ")+Math.abs(delta)+" kcal al giorno");
+}
+function trendCard(){
+  const t=trendCheck();
+  if(!t) return `<div class="callout"><b>Il numero più importante del piano è una stima.</b> Le ${goal().base} kcal di riferimento vengono da un'equazione, e la variabilità fra persone è del 10-15%: il tuo valore vero potrebbe essere 150 kcal più su o più giù. Per questo servono le misure. Segna il peso due o tre volte a settimana: dopo tre settimane confronto l'andamento reale con quello previsto e ti dico se correggere.</div>`;
+  if(t.short) return `<div class="callout"><b>Ancora ${18-t.days} giorni di dati.</b> Con ${t.days} giorni il rumore è troppo alto per concludere qualcosa: acqua, sale e fase del ciclo spostano il peso più del grasso. Continua a segnare.</div>`;
+  const L={giusto:"Il ritmo è quello previsto", lento:"Stai scendendo più lentamente del previsto",
+           veloce:"Stai scendendo troppo in fretta", sale:"Il peso sta salendo", scende:"Il peso sta scendendo"};
+  const atFloor = t.action===-150 && kcalFor("mes")<=1400;
+  let body;
+  if(!t.action){
+    body = "Non toccare niente: la stima iniziale era giusta per te.";
+  } else if(atFloor){
+    body = "Ma sei già al pavimento delle 1.400 kcal, e più in basso non si scende. Da qui la leva non è mangiare meno: sono i <b>passi</b>. Alzare la media quotidiana di 2.000 passi vale quanto tagliare 100 kcal, senza toccare il cibo. Se nemmeno così si muove niente, vale un controllo della tiroide.";
+  } else {
+    body = "Vuol dire che la mia stima del tuo fabbisogno era " + (t.action<0?"alta":"bassa") +
+      ": la correzione è " + (t.action<0?"togliere":"aggiungere") + " " + Math.abs(t.action) +
+      " kcal al giorno. È così che funziona davvero — il numero di partenza è un'ipotesi, i tuoi dati sono la verità." +
+      '<br><br><button class="btn wide" style="margin-top:4px" onclick="applyTrend(' + t.action + ')">Correggi di ' +
+      (t.action>0?"+":"") + t.action + " kcal</button>";
+  }
+  const adj = st.kcalAdj ? '<div class="xs" style="margin-top:9px">Correzione già applicata: ' + (st.kcalAdj>0?"+":"") + st.kcalAdj + " kcal al giorno.</div>" : "";
+  return '<div class="callout ' + (t.verdict==="giusto"?"g":"w") + '"><b>' + L[t.verdict] + '.</b> Da ' +
+    fmtIt(t.from) + " a " + fmtIt(t.to) + ", " + t.days + " giorni: " + t.wA + " → " + t.wB + " kg, cioè <b>" +
+    (t.perWeek>0?"+":"") + String(t.perWeek).replace(".",",") + " kg a settimana</b>. " + body + adj + "</div>";
+}
 function expData(){
   const b=new Blob([JSON.stringify(st,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(b);
@@ -1183,37 +1393,75 @@ function wipe(){ if(confirm("Cancellare tutti i dati salvati? L'operazione non �
    Enumera tutte le giornate valide (calorie in range e proteine sopra soglia),
    parte dalla settimana più economica possibile e poi la "arricchisce" finché
    resta sotto il tetto di spesa. Nessun pranzo o cena si ripete nella settimana. */
-const KMIN=1470, KMAX=1830, PMIN=98;
-let _combos=null;
+function kWin(){ const b=goal().base; return [b-180, b+180]; }
+function pMin(){ return Math.round(protFor()*0.88); }
+const PHASE_PREF = { mes:["fe","mg","comfort"], fol:["carb","light"], ovu:["prot"], lut:["mg","carb","comfort"] };
+function phaseScore(id, ph){
+  if(!ph) return 0;
+  const want=PHASE_PREF[ph]||[], tags=(MEALS[id].tag)||[];
+  return want.reduce((a,t)=>a+(tags.indexOf(t)>=0?1:0),0);
+}
+function whyPhase(id, ph){
+  if(!ph) return "";
+  const tags=(MEALS[id].tag)||[], want=PHASE_PREF[ph]||[];
+  const hit=want.filter(t=>tags.indexOf(t)>=0);
+  if(!hit.length) return "";
+  const L={fe:"ricco di ferro",mg:"ricco di magnesio",carb:"carboidrati per la benzina",
+           light:"leggero e poco gonfiante",comfort:"caldo e consolatorio",prot:"molto proteico"};
+  return hit.map(t=>L[t]).join(" · ");
+}
+let _combos=null, _sig="";
 function bySlot(){
   const b={col:[],pra:[],spu:[],cen:[]};
   Object.keys(MEALS).forEach(id=>b[MEALS[id].s].push(id));
   return b;
 }
 function combos(){
-  if(_combos) return _combos;
-  const B=bySlot(), out=[];
+  const KMIN=kWin()[0], KMAX=kWin()[1], PMIN=pMin();
+  const sig=KMIN+"|"+KMAX+"|"+PMIN+"|"+JSON.stringify(st.prices||{});
+  if(_combos && _sig===sig) return _combos;
+  _sig=sig;
+  const B=bySlot(), out=[], two=slots().indexOf("spu2")>=0;
   B.col.forEach(c=>B.pra.forEach(a=>B.spu.forEach(s2=>B.cen.forEach(e=>{
-    const k=MEALS[c].k+MEALS[a].k+MEALS[s2].k+MEALS[e].k;
-    const p=MEALS[c].p+MEALS[a].p+MEALS[s2].p+MEALS[e].p;
+    const s3 = two ? (SPU_ALT[s2]||"s3") : null;
+    const add2k = two ? MEALS[s3].k : 0, add2p = two ? MEALS[s3].p : 0;
+    const k=MEALS[c].k+MEALS[a].k+MEALS[s2].k+MEALS[e].k+add2k;
+    const p=MEALS[c].p+MEALS[a].p+MEALS[s2].p+MEALS[e].p+add2p;
     if(k>=KMIN && k<=KMAX && p>=PMIN)
-      out.push({c:c,a:a,s:s2,e:e,k:k,p:p,eur:MEALS[c].eur+MEALS[a].eur+MEALS[s2].eur+MEALS[e].eur});
+      out.push({c:c,a:a,s:s2,e:e,s3:s3,k:k,p:p,fe:mealIron(c).mg+mealIron(a).mg+mealIron(s2).mg+mealIron(e).mg+(two?mealIron(s3).mg:0),
+        eur:mealCost(c)+mealCost(a)+mealCost(s2)+mealCost(e)+(two?mealCost(s3):0)});
   }))));
   _combos=out; return out;
 }
 function shuffled(arr){ const x=arr.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
-function cheapWeek(){
-  const asc=shuffled(combos()).sort((x,y)=>x.eur-y.eur);
-  const uA=new Set(), uE=new Set(), days=[];
-  for(const x of asc){
-    if(days.length===7) break;
-    if(uA.has(x.a)||uE.has(x.e)) continue;
-    uA.add(x.a); uE.add(x.e); days.push(x);
-  }
-  return days.length===7 ? days : null;
+function comboPhaseScore(x){
+  const ph=cyc(new Date()).key;
+  const ids=[x.c,x.a,x.s,x.e].concat(x.s3?[x.s3]:[]);
+  const base=ids.reduce((a,i)=>a+phaseScore(i,ph)+seasonScore(i)*2, 0);
+  return base + (x.fe>=IRON_TARGET*0.85 ? 3 : x.fe>=IRON_TARGET*0.7 ? 1 : -2);
 }
-function enrich(days, cap){
-  const desc=shuffled(combos()).sort((x,y)=>y.eur-x.eur);
+function cheapWeek(){
+  const asc=shuffled(combos()).sort((x,y)=> (x.eur-y.eur) || (comboPhaseScore(y)-comboPhaseScore(x)));
+  const cap=legumeCap();
+  /* prova prima con il vincolo pieno, poi allenta un gradino alla volta:
+     varietà dei piatti e tetto dei legumi. Meglio un compromesso che nessuna settimana. */
+  for(const legCap of [cap, cap+1, cap+2, 99]){
+    for(const maxRep of [1,2,3]){
+      const cA={}, cE={}, days=[]; let leg=0;
+      for(const x of asc){
+        if(days.length===7) break;
+        if((cA[x.a]||0)>=maxRep || (cE[x.e]||0)>=maxRep) continue;
+        const L=legumeMeals(x);
+        if(leg+L>legCap) continue;
+        cA[x.a]=(cA[x.a]||0)+1; cE[x.e]=(cE[x.e]||0)+1; leg+=L; days.push(x);
+      }
+      if(days.length===7) return days;
+    }
+  }
+  return null;
+}
+function enrich(days, cap, legCap){
+  const desc=shuffled(combos()).sort((x,y)=> (y.eur-x.eur) || (comboPhaseScore(y)-comboPhaseScore(x)));
   let cost=days.reduce((a,x)=>a+x.eur,0), moved=true, guard=0;
   while(moved && guard++<40){
     moved=false;
@@ -1235,7 +1483,11 @@ function applyWeek(days){
   order.forEach((dow,i)=>{
     for(let j=0;j<7;j++){
       const d=new Date(start); d.setDate(d.getDate()+j); d.setHours(12,0,0,0);
-      if(d.getDay()===dow){ st.meals[k(d)]={col:days[i].c, pra:days[i].a, spu:days[i].s, cen:days[i].e}; }
+      if(d.getDay()===dow){
+        const o={col:days[i].c, pra:days[i].a, spu:days[i].s, cen:days[i].e};
+        if(days[i].s3) o.spu2=days[i].s3;
+        st.meals[k(d)]=o;
+      }
     }
   });
   save();
@@ -1244,6 +1496,16 @@ function stats(days){
   const k2=days.reduce((a,x)=>a+x.k,0)/7, p2=days.reduce((a,x)=>a+x.p,0)/7;
   return {k:Math.round(k2), p:Math.round(p2), e:days.reduce((a,x)=>a+x.eur,0)};
 }
+function legumeMeals(x){
+  const ids=[x.c,x.a,x.s,x.e].concat(x.s3?[x.s3]:[]);
+  return ids.filter(i=>/lenticchie|ceci|borlotti|fagioli/i.test(MEALS[i].ing.join(" "))).length;
+}
+function rampWeeks(){
+  if(!st.rampStart) return 0;
+  const d=Math.floor((new Date()-parseD(st.rampStart))/DAYMS);
+  return d<0?0 : d<7?1 : d<14?2 : d<21?3 : 0;    /* 0 = fase di abitudine finita */
+}
+function legumeCap(){ const w=rampWeeks(); return w===1?1 : w===2?2 : w===3?3 : 9; }
 function fitBudget(){
   const cap=budget()/4.33;
   const base=cheapWeek();
@@ -1256,7 +1518,7 @@ function fitBudget(){
     toast("Budget troppo stretto — leggi la nota");
     return;
   }
-  const r=enrich(base, cap);
+  const r=enrich(base, cap, legumeCap());
   applyWeek(r.days);
   const s2=stats(r.days);
   st.lastFit={ok:true, cap:cap, e:s2.e, k:s2.k, p:s2.p}; save(); render();
@@ -1282,6 +1544,50 @@ function parseIng(s){
 const SYN=[[/^uovo$/i,"uova"],[/^insalata mista$/i,"insalata"],[/^verdure (miste|di stagione|da grigliare)$/i,"verdure miste"],
   [/^pomodorini$/i,"pomodori"],[/^pomodoro$/i,"pomodori"],[/^fiocchi d'avena$/i,"avena"]];
 function normIng(n){ for(const [re,v] of SYN){ if(re.test(n)) return v; } return n; }
+function normPrice(n){ n=n.toLowerCase(); if(n.indexOf("uov")===0) return "uova"; return n; }
+function priceRow(name){
+  const n=normPrice(name); let best=null;
+  PRICE_LIST.forEach(r=>{ const kk=r.k.toLowerCase(); if(n.indexOf(kk)>=0 && (!best || kk.length>best.k.length)) best=r; });
+  return best;
+}
+function priceVal(row){ const o=(st.prices||{})[row.k]; return (o===undefined||o===null||o==="")?row.e:+o; }
+function priceOf2(name,q,u){
+  const r=priceRow(name);
+  if(!r) return q==null ? 0.15 : 0.30;
+  const v=priceVal(r);
+  if(r.u==="pz") return (q||1)*v;
+  if(q==null) return 0.15;      /* erbe, spezie, limone: forfait */
+  if(u==="")  { const g=PZ_G[Object.keys(PZ_G).find(x=>name.toLowerCase().includes(x))]||150; return q*g/1000*v; }
+  return q/1000*v;
+}
+function ironOf(name,q,u){
+  for(const [re,mg,kind] of IRON){
+    if(re.test(name)){
+      if(kind==="pz") return (q||1)*mg;
+      if(q==null) return 0;
+      if(u==="") { const g=PZ_G[Object.keys(PZ_G).find(x=>name.toLowerCase().includes(x))]||150; return q*g/100*mg; }
+      return q/100*mg;
+    }
+  }
+  return 0;
+}
+function mealIron(id){
+  const m=MEALS[id]; if(!m) return {mg:0, c:false};
+  let mg=0, c=false;
+  m.ing.forEach(raw=>{ const it=parseIng(raw); mg+=ironOf(it.n,it.q,it.u); if(VIT_C.test(raw)) c=true; });
+  return {mg:Math.round(mg*10)/10, c:c};
+}
+function dayIron(sel){
+  let mg=0, meals=0, withC=0;
+  slots().forEach(sl=>{ const r=mealIron(sel[sl]); mg+=r.mg; meals++; if(r.c&&r.mg>=1.5) withC++; });
+  return {mg:Math.round(mg*10)/10, withC:withC};
+}
+function mealCost(id){
+  const m=MEALS[id]; if(!m) return 0;
+  let c=0;
+  m.ing.forEach(raw=>{ const it=parseIng(raw); c+=priceOf2(it.n,it.q,it.u); });
+  return Math.round(c*100)/100;
+}
 function priceOf(name,q,u){
   for(const [re,pr,un] of PRICES){
     if(re.test(name)){
@@ -1295,6 +1601,33 @@ function priceOf(name,q,u){
 }
 function eur(v){ return "€ "+v.toFixed(2).replace(".",","); }
 function budget(){ return st.budget || 150; }
+/* ---- obiettivo: cambia calorie, proteine e taglio dell'allenamento ---- */
+const GOALS = {
+  cut:   {n:"Perdere grasso",        base:1650, prot:110, delta:{mes:-100,fol:-100,ovu:0,lut:150},
+          gym:"Ripetizioni alte e carichi moderati, tre uscite di cardio: asciugare tenendo il muscolo."},
+  recomp:{n:"Mantenere e tonificare",base:1950, prot:115, delta:{mes:-80,fol:-80,ovu:0,lut:120},
+          gym:"Stesse schede ma carichi più seri e meno cardio: la forza sale senza che il peso scenda."},
+  gain:  {n:"Mettere massa",         base:2200, prot:120, delta:{mes:-60,fol:-60,ovu:0,lut:100},
+          gym:"Serie da 8–12 con carichi impegnativi, recuperi più lunghi, cardio ridotto al minimo."}
+};
+function goal(){ return GOALS[st.goal||"cut"]; }
+function season(){ return SEASON[new Date().getMonth()+1]; }
+function seasonName(){ const c=season().c; return c==="e"?"stagione calda":c==="i"?"stagione fredda":"mezza stagione"; }
+function seasonScore(id){
+  const c=season().c, sea=MEALS[id].sea||"";
+  if(!sea) return 0;                      /* va bene sempre */
+  if(c==="m") return 0;                   /* aprile, settembre, ottobre: tutto va */
+  return sea===c ? 1 : -2;                /* fuori stagione penalizzato */
+}
+function whySeason(id){
+  const c=season().c, sea=MEALS[id].sea||"";
+  if(!sea||c==="m") return "";
+  if(sea===c) return c==="e"?"da mangiare fresco":"caldo, da stagione fredda";
+  return c==="e"?"pesante col caldo":"un po' freddo per la stagione";
+}
+function slots(){ return goal().base>=2000 ? ["col","pra","spu","cen","spu2"] : ["col","pra","spu","cen"]; }
+function goalKey(){ return st.goal||"cut"; }
+function setGoal(g){ st.goal=g; save(); render(); toast("Obiettivo: "+GOALS[g].n.toLowerCase()); }
 function fmtQ(q,u){
   if(q==null) return "";
   if(u==="g"  && q>=1000) return String(Math.round(q/100)/10).replace(".",",")+" kg";
@@ -1307,7 +1640,7 @@ function shopList(){
   for(let i=0;i<7;i++){
     const d=new Date(start); d.setDate(d.getDate()+i); d.setHours(12,0,0,0);
     const sel=dayMeals(k(d), d.getDay());
-    ["col","pra","spu","cen"].forEach(sl=>{
+    slots().forEach(sl=>{
       const id=sel[sl], m=MEALS[id];
       if(!m || id==="p9") return;                       /* il pasto libero non si compra */
       m.ing.forEach(raw=>{
@@ -1317,7 +1650,7 @@ function shopList(){
         const key=(a+"|"+it.n+"|"+it.u).toLowerCase();
         if(!bag[key]) bag[key]={a:a, n:it.n, u:it.u, q:it.q===null?null:0, key:key, e:0};
         if(it.q!==null && bag[key].q!==null) bag[key].q+=it.q;
-        bag[key].e += priceOf(it.n, it.q, it.u);
+        bag[key].e += priceOf2(it.n, it.q, it.u);
       });
     });
   }
@@ -1332,7 +1665,7 @@ function renderSpesa(){
   const all=[]; Object.keys(L).forEach(a=>L[a].forEach(x=>all.push(x.key)));
   R.x.forEach((x,i)=>all.push("x"+i));
   const done=all.filter(kk=>R.c[kk]).length;
-  const fdate=d=>d.getDate()+" "+MONTHS[d.getMonth()].slice(0,3);
+  const fdate=d=>fmtItShort(k(d));
 
   let tot=0; Object.keys(L).forEach(a=>L[a].forEach(x=>tot+=x.e));
   const wTarget=budget()/4.33, over=tot>wTarget;
@@ -1373,7 +1706,8 @@ function renderSpesa(){
     h+=`</div>`;
   });
 
-  h+=`<div class="sec-t">Altro che ti serve</div><div class="card" style="padding-top:4px">`;
+  h+=`<div class="callout g"><b>Di stagione questo mese:</b> ${season().v} · ${season().f}. Dove la lista dice genericamente "verdure", prendi queste: costano meno e sanno di più.</div>
+  <div class="sec-t">Altro che ti serve</div><div class="card" style="padding-top:4px">`;
   if(R.x.length) R.x.forEach((n,i)=>{
     const kk="x"+i, on=!!R.c[kk];
     h+=`<div class="shrow ${on?"on":""}">
@@ -1385,7 +1719,18 @@ function renderSpesa(){
   h+=`<div class="shadd"><input id="shi" placeholder="Aggiungi una voce" onkeydown="if(event.key==='Enter')shAdd()">
     <button class="btn" onclick="shAdd()">Aggiungi</button></div></div>`;
 
-  h+=`<button class="btn sec wide" style="margin-top:12px" onclick="shReset()">Azzera le spunte</button>
+  h+=`<details style="margin-top:14px"><summary>Prezzi Lidl — correggili tu</summary><div class="dc">
+    <div class="callout w" style="margin-top:0"><b>Questi prezzi sono stime mie, non verificate.</b> Non ho potuto controllare il listino Lidl di oggi. Alla prima spesa segna i prezzi veri qui sotto: da quel momento il costo dei piatti, il totale della settimana e il pianificatore useranno i tuoi numeri e diventeranno esatti. La colonna a destra è la linea Lidl dove di solito trovi il prodotto, ma controlla sullo scaffale.</div>
+    <div class="callout" style="margin-bottom:14px"><b>Come compilarla in dieci minuti.</b> Non serve il prezzo al chilo: scrivi <b>quello che leggi sul cartellino</b> nella forma <b>prezzo/grammi</b> e converto io. Esempio: lo yogurt greco da 1 kg a 3,49 € lo scrivi <b>3.49/1000</b>; il tonno, 4 scatolette da 80 g sgocciolati a 3,99 €, lo scrivi <b>3.99/320</b>. Se invece hai già il €/kg, scrivilo secco.</div>
+    ${PRICE_LIST.map(r=>`<div class="shrow" style="cursor:default">
+      <span class="shtxt"><b>${esc(r.k)}</b><div class="xs">${esc(FORMATS[r.k]||r.m)} · ${esc(r.m)}</div></span>
+      <input type="text" inputmode="decimal" value="${priceVal(r)}" placeholder="€/${r.u}"
+        style="width:96px;border:1px solid var(--line);border-radius:12px;padding:9px;background:var(--sage-mist);text-align:right"
+        onchange="setPrice('${r.k}',this.value)">
+    </div>`).join("")}
+    <button class="btn sec wide" style="margin-top:12px" onclick="resetPrices()">Ripristina i prezzi di partenza</button>
+  </div></details>
+  <button class="btn sec wide" style="margin-top:12px" onclick="shReset()">Azzera le spunte</button>
     <div class="callout g" style="margin-top:14px"><b>Domenica sera, 40 minuti.</b> Cuoci il pollo, lessa il riso, taglia e griglia le verdure. Metà della settimana si risolve così, e nei giorni senza tempo non devi scegliere tra cucinare e mangiare male.</div>`;
   document.getElementById("v-spesa").innerHTML=h;
 }
@@ -1394,6 +1739,20 @@ function fitNote(){
   if(f.ok) return `<div class="callout g" style="margin-bottom:0"><b>Settimana adattata al budget.</b> ${eur(f.e)} di spesa, ${f.k} kcal e ${f.p} g di proteine al giorno in media. Ho preso la combinazione più ricca che stava nel tetto di ${eur(f.cap)}: il margine che avanzava l'ho speso in piatti migliori — polipo, salmone, carne — invece di lasciarlo lì. Ripremendo il pulsante ottieni una settimana diversa allo stesso prezzo.</div>`;
   return `<div class="callout w" style="margin-bottom:0"><b>Con ${eur(f.cap)} a settimana non ci sto.</b> Ho provato tutte le combinazioni possibili: il minimo che rispetta insieme calorie e proteine è <b>${eur(f.floor)} a settimana</b>, cioè ${eur(f.floor*4.33)} al mese. Ti ho messo quella — è la settimana più economica che esista con questo ricettario, ${f.k} kcal e ${f.p} g di proteine al giorno. Sotto quella soglia non è questione di scelte furbe: tagliare ancora significa tagliare proteine, e in deficit calorico vuol dire perdere muscolo insieme al grasso. Se il budget è davvero più basso, meglio saperlo e alzarlo di qualche euro che seguire un piano che non regge.</div>`;
 }
+function setPrice(kk,v){
+  st.prices=st.prices||{};
+  const t=String(v).replace(",",".").trim();
+  let n;
+  const frac=t.match(/^([\d.]+)\s*\/\s*([\d.]+)$/);      /* "3.49/1000" = prezzo per quella grammatura */
+  if(frac){
+    const price=parseFloat(frac[1]), grams=parseFloat(frac[2]);
+    const row=PRICE_LIST.find(r=>r.k===kk);
+    n = (row && row.u==="pz") ? price/grams : price/grams*1000;
+  } else n = parseFloat(t);
+  if(isNaN(n)||n<=0) delete st.prices[kk]; else st.prices[kk]=Math.round(n*100)/100;
+  _combos=null; save(); renderSpesa(); renderCibo(); toast("Prezzo aggiornato");
+}
+function resetPrices(){ st.prices={}; _combos=null; save(); render(); toast("Prezzi di partenza ripristinati"); }
 function shTick(kk){ const R=shopRec(); R.c[kk]=!R.c[kk]; save(); renderSpesa(); }
 function shAdd(){ const i=document.getElementById("shi"); const v=(i.value||"").trim();
   if(!v) return; shopRec().x.push(v); save(); renderSpesa(); toast("Aggiunto"); }
@@ -1403,7 +1762,20 @@ function shReset(){ shopRec().c={}; save(); renderSpesa(); toast("Spunte azzerat
 /* ---------------- vista INFO ---------------- */
 function renderInfo(){
   const ph=progPhase(cur);
-  let h = `<div class="sec-t">Come funziona</div>
+  const G=goal(), gk=goalKey();
+  let h = `<div class="sec-t">Il tuo obiettivo</div>
+  <div class="card">
+    <div class="xs" style="margin-bottom:11px">Cambia obiettivo e si spostano insieme: calorie di ogni fase, soglia proteica, taglio dell'allenamento e settimana proposta dal pianificatore.</div>
+    ${Object.keys(GOALS).map(g=>`<div class="altitem ${g===gk?"cur":""}" onclick="setGoal('${g}')">
+      <div><b style="font-size:14.5px">${GOALS[g].n}</b>
+        <div class="xs">${GOALS[g].base} kcal di base · ${GOALS[g].prot} g di proteine</div></div>
+      <div class="mmac">${g===gk?"✓":""}</div></div>`).join("")}
+    <div class="xs" style="margin-top:10px">${esc(G.gym)}</div>
+    ${gk==="gain"?`<div class="callout" style="margin-bottom:0"><b>Una nota onesta sul mettere massa.</b> Con un surplus calorico il girovita sale insieme al muscolo: è inevitabile, e va contro l'obiettivo "slim" di cui abbiamo parlato. Ha senso se a un certo punto vuoi diventare più forte e più piena, non se vuoi asciugarti.</div>`:""}
+    ${gk==="recomp"?`<div class="callout g" style="margin-bottom:0"><b>È l'opzione che quasi nessuno sceglie e che a molte serve.</b> A calorie di mantenimento con proteine alte e pesi, la bilancia resta ferma mentre la composizione cambia: più lento da vedere, ma sostenibile per mesi senza il logoramento del deficit.</div>`:""}
+  </div>
+
+  <div class="sec-t">Come funziona</div>
   <div class="card"><div class="sm">Sei nella <b>Fase ${ph}</b> del programma: ${ph===1?"allenamenti in palestra, fino al 6 settembre.":"allenamenti a casa, con tappetino, sedia e zaino carico."} L'app cambia da sola le schede il 7 settembre.</div>
   <div class="g2" style="margin-top:11px">
     <button class="btn sec" onclick="setPh(1)" style="${ph===1?"background:var(--ink);color:#fff":""}">Fase 1 · palestra</button>
@@ -1417,11 +1789,11 @@ function renderInfo(){
   <details><summary>I tuoi numeri</summary><div class="dc">
     <table><tbody>
       <tr><td>Mantenimento stimato</td><td class="n"><b>1.950 kcal</b></td></tr>
-      <tr><td>Media obiettivo</td><td class="n"><b>1.650 kcal</b></td></tr>
-      <tr><td>Proteine al giorno</td><td class="n"><b>100–110 g</b></td></tr>
+      <tr><td>Media obiettivo</td><td class="n"><b>${G.base} kcal</b></td></tr>
+      <tr><td>Proteine al giorno</td><td class="n"><b>${G.prot} g</b></td></tr>
       <tr><td>Pavimento invalicabile</td><td class="n"><b>1.400 kcal</b></td></tr>
       <tr><td>Ritmo atteso</td><td class="n"><b>−0,35 kg / sett.</b></td></tr>
-      <tr><td>Budget cibo</td><td class="n"><b>~149 € / mese</b></td></tr>
+      <tr><td>Budget cibo impostato</td><td class="n"><b>${budget()} € / mese</b></td></tr>
     </tbody></table>
     <div class="xs" style="margin-top:10px">Stima su 20 anni, 162 cm, 65 kg, donna, con tre allenamenti e camminate quotidiane.</div></div></details>
 
@@ -1433,10 +1805,10 @@ function renderInfo(){
   <details><summary>Il ciclo, fase per fase</summary><div class="dc">
     <div class="callout" style="margin-top:0"><b>Come fa l'app a saperlo, con un ciclo irregolare.</b> Non usa un ciclo teorico di 28 giorni: misura i tuoi intervalli reali dai giorni che segni sul calendario. E siccome la parte variabile di un ciclo irregolare è quasi sempre la prima metà mentre la fase luteale dura sempre 12–14 giorni, l'ovulazione viene stimata <em>all'indietro</em> dalla lunghezza dei tuoi cicli, non contando in avanti dal primo giorno. Più cicli segni, più la finestra si stringe. Quando la variabilità resta alta l'app te lo dice invece di fingere precisione.</div>
     <table><thead><tr><th>Fase</th><th>Come cambia il piano</th></tr></thead><tbody>
-    <tr><td><b>Mestruale</b><br><span class="xs">giorni segnati · 1.550 kcal</span></td><td class="sm">Volume ridotto del 20–30%. Se stai male, camminata. Occhio al ferro.</td></tr>
-    <tr><td><b>Follicolare</b><br><span class="xs">fino all'ovulazione · 1.550 kcal</span></td><td class="sm">La finestra migliore: qui alzi i carichi e provi le progressioni nuove.</td></tr>
-    <tr><td><b>Ovulatoria</b><br><span class="xs">finestra stimata · 1.650 kcal</span></td><td class="sm">Picco di forza ma legamenti più lassi: niente salti, cura gli atterraggi.</td></tr>
-    <tr><td><b>Luteale</b><br><span class="xs">ultimi 12–14 giorni · 1.800 kcal</span></td><td class="sm">Tutto sembra più faticoso: mantieni la frequenza, non cercare record. Ritenzione idrica di 1–2 kg: ignora la bilancia.</td></tr>
+    <tr><td><b>Mestruale</b><br><span class="xs">giorni segnati · ${kcalFor("mes")} kcal</span></td><td class="sm">Volume ridotto del 20–30%. Se stai male, camminata. Occhio al ferro.</td></tr>
+    <tr><td><b>Follicolare</b><br><span class="xs">fino all'ovulazione · ${kcalFor("fol")} kcal</span></td><td class="sm">La finestra migliore: qui alzi i carichi e provi le progressioni nuove.</td></tr>
+    <tr><td><b>Ovulatoria</b><br><span class="xs">finestra stimata · ${kcalFor("ovu")} kcal</span></td><td class="sm">Picco di forza ma legamenti più lassi: niente salti, cura gli atterraggi.</td></tr>
+    <tr><td><b>Luteale</b><br><span class="xs">ultimi 12–14 giorni · ${kcalFor("lut")} kcal</span></td><td class="sm">Tutto sembra più faticoso: mantieni la frequenza, non cercare record. Ritenzione idrica di 1–2 kg: ignora la bilancia.</td></tr>
     </tbody></table>
     <div class="callout w" style="margin-bottom:0"><b>Il segnale da non ignorare.</b> Se il ciclo diventa irregolare o sparisce, fermati e risali con le calorie. Non è un effetto collaterale dell'allenamento: è il corpo che segnala energia insufficiente, e trascinarlo per mesi ha conseguenze sulla densità ossea. È il motivo per cui il pavimento delle 1.400 kcal non è un consiglio ma un limite. Parlane con un medico.</div></div></details>
 
@@ -1502,7 +1874,7 @@ function setPh(p){ st.phaseOverride = (st.phaseOverride===p) ? null : p; save();
 
 /* ---------------- render / nav ---------------- */
 function render(){
-  document.getElementById("hDate").textContent = cur.getDate()+" "+MONTHS[cur.getMonth()]+" "+cur.getFullYear();
+  document.getElementById("hDate").textContent = fmtIt(k(cur));
   document.getElementById("hDay").textContent = DAYS[cur.getDay()];
   renderOggi(); renderCibo(); renderSpesa(); renderProg(); renderInfo();
 }
