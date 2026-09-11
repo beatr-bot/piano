@@ -1716,7 +1716,7 @@ function palShow(){
   }
 
   if(S.st === "pick"){
-    const dow = cur.getDay(), plan = WEEK[dow], ph = progPhase(cur);
+    const dow = cur.getDay(), plan = planFor(cur), ph = progPhase(cur);
     const todayW = plan.type === "work" ? (ph === 1 ? "gym" : "home") + plan.slot : null;
     ttl.textContent = P.name;
     h += '<div class="pal-stage"><div class="mslot">Adesso</div>'
@@ -1876,7 +1876,7 @@ function palTodayCard(wid){
 function palAnyCard(){
   const P = palState();
   if(!P.name) return palTodayCard(null);
-  const plan = WEEK[cur.getDay()];
+  const plan = planFor(cur);
   return '<div class="card" style="border-color:var(--sage-2)">'
     + '<div class="mslot">Se ti va adesso</div>'
     + '<div style="font-family:var(--disp);font-size:22px;line-height:1.15;margin:6px 0 8px">' + esc(P.name) + ' c\'è comunque</div>'
@@ -2283,7 +2283,7 @@ function setMe(f, v){
   const L = ME_LIM[f];
   if(L && (n < L[0] || n > L[1])){
     render();
-    return toast(f==="eta" ? "L'eta va fra " + L[0] + " e " + L[1]
+    return toast(f==="eta" ? "L'età va fra " + L[0] + " e " + L[1]
                : f==="cm"  ? "L'altezza va fra " + L[0] + " e " + L[1] + " cm"
                : "Il peso va fra " + L[0] + " e " + L[1] + " kg");
   }
@@ -2297,15 +2297,95 @@ function bmr(){
   return Math.round(10*m.kg + 6.25*m.cm - 5*m.eta - 161);
 }
 function tdeeFermi(){ return meOk() ? Math.round(bmr()*1.2/10)*10 : 0; }      /* senza allenarsi */
-function tdeeAttiva(){ return meOk() ? Math.round(bmr()*1.375/10)*10 : 0; }   /* col piano */
+function tdeeAttiva(){ return meOk() ? Math.round(bmr()*1.375/10)*10 : 0; }   /* col piano fatto per intero */
+
+/* ============================================================
+   IL CONSUMO SEGUE QUELLO CHE FAI DAVVERO
+   ------------------------------------------------------------
+   Il fattore di attività non è una promessa: è una misura. Se
+   il piano dice tre sedute e ne fai zero, il consumo non è
+   quello di chi si allena, e continuare a mangiare come se lo
+   fosse è il modo più comune per non vedere risultati e dare la
+   colpa alla dieta. Si guardano le ultime due settimane di
+   spunte vere: ogni seduta coi pesi vale 1, ogni giornata di
+   cardio o passi vale mezza.
+   Le prime due settimane no: non hai ancora uno storico e
+   sarebbe ingiusto partire dal numero più basso.
+   ============================================================ */
+function sedute14(){
+  let pts = 0, giorni = 0;
+  for(let i=1;i<=14;i++){
+    const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-i);
+    const kk = k(d);
+    if(offDay(kk)) continue;                           /* eri via, o stavi male: non conta */
+    giorni++;
+    const r = (st.done||{})[kk]; if(!r) continue;
+    const P = planFor(d);
+    if(P.type === "work"){
+      const wid = (progPhase(d)===1?"gym":"home") + P.slot, W = WORKOUTS[wid];
+      if(W){
+        const n = W.items.filter(it=>(r.ex||{})[exSwap(it[0])]).length;
+        if(n >= Math.ceil(W.items.length*0.6)) pts += 1;
+        else if(n > 0) pts += 0.5;
+      }
+    } else if(r.steps) pts += 0.5;
+    pts += (r.plus||[]).length ? 0.5 : 0;              /* il movimento fuori piano conta */
+  }
+  if(!giorni) return null;                             /* due settimane intere di pausa */
+  return Math.round(pts/giorni*7 * 10)/10;             /* sedute a settimana */
+}
+function rodata(){ return st.start && daysBetween(st.start, todayKey()) >= 14; }
+/* Serve la prova, non il silenzio: se non hai aperto l'app, non so
+   che cosa hai fatto, e tirare a indovinare al ribasso è scorretto. */
+function attivNota(){
+  if(!rodata()) return "nuova";
+  if(sedute14() === null) return "pausa";
+  if(giorniVisti(14) < 5) return "cieca";
+  return "ok";
+}
+function fattoreAtt(){
+  if(attivNota() !== "ok") return 1.375;
+  return 1.20 + Math.min(0.175, sedute14()*0.058);
+}
+/* il consumo su cui si fanno i conti oggi */
+function tdeeReale(){ return meOk() ? Math.round(bmr()*fattoreAtt()/10)*10 : 0; }
 
 const BASE_NEUTRO = { cut:1700, recomp:1900, gain:2150 };
 const PROT_NEUTRO = { cut:105,  recomp:110,  gain:115  };
 function baseFor(gk){
   if(!meOk()) return BASE_NEUTRO[gk] || 1700;
-  const t = tdeeAttiva();
-  const v = gk === "cut" ? t-300 : gk === "gain" ? t+250 : t;
+  const t = tdeeReale();
+  /* il taglio è una percentuale, non 300 fisse: su un consumo più basso
+     300 kcal sono un buco molto più profondo, e si finisce sul pavimento */
+  const taglio = Math.min(350, Math.max(200, Math.round(t*0.15)));
+  const v = gk === "cut" ? t-taglio : gk === "gain" ? t+250 : t;
   return Math.max(1400, Math.round(v/10)*10);          /* il pavimento resta invalicabile */
+}
+/* la cartolina onesta: cosa è cambiato e perché */
+function attivCard(){
+  if(!meOk()) return "";
+  const nota = attivNota();
+  if(nota === "nuova") return "";
+  if(nota === "pausa") return "";
+  if(nota === "cieca") return '<div class="callout"><b>Non so quanto ti sei mossa.</b> Negli ultimi quattordici giorni hai segnato poco o niente, '
+    + 'quindi le calorie restano quelle del piano pieno: preferisco non tirare a indovinare al ribasso.'
+    + why("L\'app abbassa le calorie solo quando ha le prove che ti sei mossa meno, cioè quando hai usato l\'app e le spunte sono vuote. "
+        + "Il silenzio non è una prova: potresti esserti allenata benissimo senza segnare niente. Se invece è un periodo in cui davvero non ti alleni, "
+        + "segna le spunte per qualche giorno e il numero si sistema da solo.")
+    + '</div>';
+  const s = sedute14();
+  if(s >= 2.5) return "";
+  const pieno = Math.max(1400, Math.round((tdeeAttiva() - Math.min(350, Math.max(200, Math.round(tdeeAttiva()*0.15))))/10)*10);
+  const ora = baseFor(goalKey());
+  const d = pieno - ora;
+  return '<div class="callout w"><b>' + (s === 0 ? "Nelle ultime due settimane non ti sei allenata." : "Nelle ultime due settimane hai fatto " + (s===1?"una seduta":s + " sedute") + " a settimana invece di tre.")
+    + '</b> Il tuo consumo reale è sceso a <b>' + tdeeReale() + ' kcal</b>, quindi l\'obiettivo è <b>' + ora + '</b>'
+    + (d > 0 ? ' invece di ' + pieno + ': ' + d + ' kcal in meno.' : '.')
+    + ' Non è una punizione e non è colpa tua: è che il conto cambia davvero.'
+    + why("Il numero risale da solo appena torni ad allenarti, senza che tu debba toccare niente. E la direzione giusta è quella: alzare il consumo muovendoti, non abbassare ancora il piatto. "
+        + "Se le calorie scendono e il movimento pure, il corpo si adatta al ribasso — e con il ciclo già irregolare è la strada più corta per farlo sparire. "
+        + "Se questa è una settimana storta e basta, ignora tutto: il conto guarda quattordici giorni, non uno.")
+    + '</div>';
 }
 function protForGoal(gk){
   if(!meOk()) return PROT_NEUTRO[gk] || 105;
@@ -2325,7 +2405,9 @@ function meCard(){
   if(meOk()){
     h += '<div class="row" style="padding-top:12px;border-top:1px solid var(--line)">'
       + '<span class="sm">Metabolismo basale</span><span class="sm"><b>' + bmr() + ' kcal</b></span></div>'
-      + '<div class="row"><span class="sm">Consumo col piano</span><span class="sm"><b>' + tdeeAttiva() + ' kcal</b></span></div>'
+      + '<div class="row"><span class="sm">Consumo col piano fatto per intero</span><span class="sm"><b>' + tdeeAttiva() + ' kcal</b></span></div>'
+      + '<div class="row"><span class="sm">Consumo reale, su quello che fai<div class="xs">' + (attivNota()==="ok" ? sedute14() + " sedute a settimana negli ultimi 14 giorni" : attivNota()==="nuova" ? "primi giorni: per ora conto il piano pieno" : attivNota()==="pausa" ? "sei stata in pausa: conto il piano pieno" : "hai segnato poco: conto il piano pieno") + '</div></span>'
+      + '<span class="sm"><b style="color:' + (tdeeReale() < tdeeAttiva()-40 ? "var(--clay)" : "var(--ok)") + '">' + tdeeReale() + ' kcal</b></span></div>'
       + '<div class="row"><span class="sm">Obiettivo di oggi</span><span class="sm"><b>' + goal().base + ' kcal · ' + goal().prot + ' g prot</b></span></div>';
   }
   h += '<div class="exhead" style="padding-top:14px;cursor:pointer" onclick="setMe(\'ferro\')">'
@@ -2464,6 +2546,67 @@ function hintBox(id, dose){
    SETTIMANA · CUCINARE UNA VOLTA PER DUE · LE TUE SCELTE
    ============================================================ */
 
+/* ============================================================
+   SPOSTARE UN ALLENAMENTO
+   ------------------------------------------------------------
+   Il calendario di partenza (lunedì, mercoledì, venerdì) è una
+   proposta, non un contratto. Se oggi non ce la fai, lo scambi
+   con un altro giorno della stessa settimana: i due giorni si
+   scambiano quello che hanno, così restano sempre tre sedute e
+   non si accumula un debito.
+   ============================================================ */
+function planFor(d){
+  const o = (st.wplan || {})[k(d)];
+  return o || WEEK[d.getDay()];
+}
+function samePlan(a, b){ return a.type === b.type && (a.slot||"") === (b.slot||""); }
+function pruneWplan(){
+  if(!st.wplan) return;
+  const lim = addD(todayKey(), -35);
+  Object.keys(st.wplan).forEach(kk=>{
+    if(kk < lim || samePlan(st.wplan[kk], WEEK[parseD(kk).getDay()])) delete st.wplan[kk];
+  });
+}
+function moveWork(fromKey, toKey){
+  st.wplan = st.wplan || {};
+  const a = planFor(parseD(fromKey)), b = planFor(parseD(toKey));
+  st.wplan[fromKey] = b; st.wplan[toKey] = a;
+  pruneWplan(); save(); render();
+  toast("Spostato a " + DAYS[parseD(toKey).getDay()].toLowerCase());
+}
+function resetWplan(){
+  const D = []; const s = weekStart(cur);
+  for(let i=0;i<7;i++){ const x=new Date(s); x.setDate(x.getDate()+i); D.push(k(x)); }
+  if(st.wplan) D.forEach(kk=>delete st.wplan[kk]);
+  save(); render(); toast("Settimana rimessa com'era");
+}
+/* il pannellino per spostare: solo da oggi in avanti, solo dentro la settimana */
+function moveCard(d){
+  const key = k(d), oggi = todayKey();
+  if(key < oggi) return "";
+  const P = planFor(d), work = P.type === "work";
+  const s = weekStart(d), opt = [];
+  for(let i=0;i<7;i++){
+    const x = new Date(s); x.setDate(x.getDate()+i); x.setHours(12,0,0,0);
+    const kk = k(x); if(kk === key || kk < oggi) continue;
+    const px = planFor(x);
+    if(work || px.type === "work") opt.push({k:kk, d:x, p:px});
+  }
+  if(!opt.length) return "";
+  const nome = pp => pp.type==="work" ? "Pesi "+pp.slot : pp.type==="zona2" ? "Cardio" : pp.type==="steps" ? "Passi" : "Riposo";
+  const cambiata = Object.keys(st.wplan||{}).some(kk=>{
+    const x = parseD(kk); return x >= s && x <= parseD(k(new Date(s.getTime()+6*DAYMS)));
+  });
+  return `<details class="why" style="margin-top:-4px"><summary>${work ? "Oggi non ce la faccio · spostalo" : "Porta qui un allenamento"}</summary><div class="dc">
+    <div class="sm">I due giorni si scambiano: così le tre sedute della settimana restano tre, e non si accumula arretrato.</div>
+    <div style="margin-top:10px">${opt.map(x=>`<div class="altitem" onclick="moveWork('${key}','${x.k}')">
+      <div><b style="font-size:14px">${DAYS[x.d.getDay()]} ${fmtItShort(x.k)}</b>
+        <div class="xs">adesso: ${nome(x.p)} → diventa ${nome(P)}</div></div>
+      <div class="mmac">›</div></div>`).join("")}</div>
+    ${cambiata ? `<button class="btn sec wide" style="margin-top:11px" onclick="resetWplan()">Rimetti la settimana com'era</button>` : ""}
+  </div></details>`;
+}
+
 /* ---------------- i sette giorni ---------------- */
 function weekStart(d){                       /* lunedì della settimana di d */
   const x = new Date(d); x.setHours(12,0,0,0);
@@ -2482,12 +2625,12 @@ function weekDays(){
 function dayTotals(d){
   const key = k(d), sel = dayMeals(key, d.getDay());
   let kc = 0, eu = 0;
-  slots().forEach(s=>{ const m = MEALS[sel[s]]; if(m){ kc += m.k; eu += mealCost(sel[s]); } });
+  slots().forEach(s=>{ const V = mealVals(key, s, sel[s]); if(V){ kc += V.k; eu += V.eur; } });
   const X = extraSum(key); kc += X.k; eu += X.eur;
   return {kc:kc, eur:eu, sel:sel, key:key};
 }
 function dayWork(d){
-  const plan = WEEK[d.getDay()], ph = progPhase(d);
+  const plan = planFor(d), ph = progPhase(d);
   if(plan.type === "work"){
     const wid = (ph===1?"gym":"home") + plan.slot;
     return {t:"Scheda " + plan.slot, n:WORKOUTS[wid].t, cls:"pill-g", wid:wid};
@@ -2515,7 +2658,7 @@ function renderWeek(){
   D.forEach(d=>{
     const T = dayTotals(d); kcTot += T.kc; eurTot += T.eur;
     const W = dayWork(d);
-    if(W.wid){ wTot++; if(dayDone(d).n === WORKOUTS[W.wid].items.length) wDone++; }
+    if(W.wid && !offDay(k(d))){ wTot++; if(dayDone(d).n === WORKOUTS[W.wid].items.length) wDone++; }
   });
 
   let h = `<div class="card"><div class="row">
@@ -2532,18 +2675,23 @@ function renderWeek(){
 
   D.forEach(d=>{
     const key = k(d), W = dayWork(d), T = dayTotals(d), DN = dayDone(d), isT = key === today;
-    const meals = slots().map(s=>{
-      const m = MEALS[T.sel[s]]; if(!m) return "";
-      const lo = isLeftover(key, s);
-      return `<span class="wkm${lo?" lo":""}">${esc(m.n)}${lo?" ·  avanzo":""}</span>`;
-    }).join("");
+    const OD = offDay(key);
+    const meals = OD
+      ? `<span class="wkm" style="color:${OFF[OD].c}">${OFF[OD].n}</span>`
+      : slots().map(s=>{
+          const MS = mStat(key, s);
+          if(MS) return `<span class="wkm lo">${MS.t==="salto" ? "salta "+slotName(s).toLowerCase() : esc(MS.n)}</span>`;
+          const m = MEALS[T.sel[s]]; if(!m) return "";
+          const lo = isLeftover(key, s);
+          return `<span class="wkm${lo?" lo":""}">${esc(m.n)}${lo?" ·  avanzo":""}</span>`;
+        }).join("");
     h += `<div class="card wkday ${isT?"tod":""}" onclick="goDay('${key}')">
       <div class="row">
         <div><div class="xs">${DAYS[d.getDay()]} ${fmtItShort(key)}</div>
-          <div style="font-family:var(--disp);font-weight:var(--disp-w);font-size:18px;letter-spacing:var(--disp-ls);margin-top:2px">${esc(W.n)}</div></div>
+          <div style="font-family:var(--disp);font-weight:var(--disp-w);font-size:18px;letter-spacing:var(--disp-ls);margin-top:2px">${OD?esc(OFF[OD].d):esc(W.n)}</div></div>
         <div style="text-align:right;flex:0 0 auto">
-          <span class="pill ${W.cls}">${esc(W.t)}</span>
-          <div class="xs" style="margin-top:5px">${W.wid?`${DN.n}/${DN.tot} fatti`:(DN.n?"fatto":"")}</div></div>
+          <span class="pill ${OD?"pill-b":W.cls}">${OD?esc(OFF[OD].n):esc(W.t)}</span>
+          <div class="xs" style="margin-top:5px">${OD?"":(W.wid?`${DN.n}/${DN.tot} fatti`:(DN.n?"fatto":""))}</div></div>
       </div>
       <div class="wkmeals">${meals}</div>
       <div class="xs" style="margin-top:7px">${T.kc} kcal · ${eur(T.eur)}</div>
@@ -2604,6 +2752,7 @@ function batchCard(D){
   D.forEach(d=>{
     const key = k(d), T = dayTotals(d);
     if(key < oggi) return;                    /* i giorni passati sono il diario, non si cucina indietro */
+    if(offDay(key)) return;                   /* in pausa non si cucina per il giorno dopo */
     slots().forEach(s=>{
       const id = T.sel[s];
       if(!id || !keeps(id) || isLeftover(key, s)) return;
@@ -2743,10 +2892,11 @@ function mealCarb(id){
 
 /* ---------------- i conti della giornata ---------------- */
 function macrosOf(sel, key){
+  const kk = key || todayKey();
   let kc = 0, pr = 0, ca = 0, fe = 0;
   slots().forEach(s=>{
-    const id = sel[s], m = MEALS[id]; if(!m) return;
-    kc += m.k; pr += m.p; ca += mealCarb(id); fe += mealIron(id).mg;
+    const V = mealVals(kk, s, sel[s]); if(!V) return;
+    kc += V.k; pr += V.p; ca += V.c; fe += V.fe;
   });
   const X = extraSum(key || todayKey());
   kc += X.k; pr += X.p;
@@ -2816,7 +2966,10 @@ function ironBadge(id){
 function kcalIf(key, dow, slot, id){
   const sel = Object.assign({}, dayMeals(key, dow)); sel[slot] = id;
   let kc = 0;
-  slots().forEach(s=>{ const m = MEALS[sel[s]]; if(m) kc += m.k; });
+  slots().forEach(s=>{
+    if(s === slot){ const m = MEALS[id]; if(m) kc += m.k; return; }   /* quello che stai scegliendo */
+    const V = mealVals(key, s, sel[s]); if(V) kc += V.k;              /* gli altri, com'è andata davvero */
+  });
   return kc + extraSum(key).k;
 }
 /* il numero della giornata se scegliessi quel piatto, rosso se sfori */
@@ -2936,6 +3089,252 @@ function datiCard(){
     + '<button class="btn sec wide" style="margin-top:12px;color:#a33" onclick="wipe()">Cancella tutti i dati</button>'
     + '</div>';
 }
+
+/* ============================================================
+   LA VITA VERA
+   ------------------------------------------------------------
+   Un piano che funziona solo nella settimana perfetta non serve
+   a niente, perché quella settimana non esiste. Qui stanno le
+   cose che succedono davvero:
+     · mangi fuori, o non hai fame e salti
+     · parti, o stai male, o decidi di fermarti
+     · ti muovi in modi che il piano non aveva previsto
+     · sparisci per dieci giorni e poi torni
+   La regola dietro tutte: l'app deve saper distinguere fra
+   "non l'hai fatto" e "non me l'hai detto". Sono cose diverse e
+   meritano risposte diverse.
+   ============================================================ */
+
+/* ---------------- giorni in cui non ci sei ---------------- */
+const OFF = {
+  via:    { n:"Via da casa",  d:"Niente spesa e niente cucina: mangi quello che trovi.", c:"var(--sky)" },
+  malata: { n:"Sto male",     d:"Riposo vero. Non conta come allenamento saltato.",      c:"var(--clay)" },
+  stop:   { n:"Pausa scelta", d:"Hai deciso tu di fermarti. Va bene così.",              c:"var(--lilac)" }
+};
+function offDay(key){ const v = (st.off||{})[key]; return OFF[v] ? v : null; }
+function offVia(key){ return offDay(key) === "via"; }
+function setOffRange(fromKey, toKey, why){
+  if(!OFF[why]) return;
+  st.off = st.off || {};
+  let a = fromKey, b = toKey;
+  if(b < a){ const t = a; a = b; b = t; }
+  let n = 0, d = parseD(a);
+  while(k(d) <= b && n < 400){ st.off[k(d)] = why; d.setDate(d.getDate()+1); n++; }
+  pruneOff(); save(); render();
+  toast(n === 1 ? OFF[why].n + ": segnato oggi" : OFF[why].n + ": " + n + " giorni segnati");
+}
+function clearOff(key){ if(st.off) delete st.off[key]; save(); render(); toast("Rimesso in piano"); }
+function clearOffRun(key){
+  /* toglie tutto il periodo di cui fa parte questo giorno, non solo il giorno */
+  if(!st.off) return;
+  const why = st.off[key]; if(!why) return;
+  let d = parseD(key);
+  while(st.off[k(d)] === why){ delete st.off[k(d)]; d.setDate(d.getDate()-1); }
+  d = parseD(key); d.setDate(d.getDate()+1);
+  while(st.off[k(d)] === why){ delete st.off[k(d)]; d.setDate(d.getDate()+1); }
+  save(); render(); toast("Periodo annullato");
+}
+function pruneOff(){
+  if(!st.off) return;
+  const lim = addD(todayKey(), -120);
+  Object.keys(st.off).forEach(kk=>{ if(kk < lim || !OFF[st.off[kk]]) delete st.off[kk]; });
+}
+/* quanti giorni dura ancora il periodo che comincia oggi */
+function offFino(key){
+  let d = parseD(key), why = offDay(key), last = key;
+  if(!why) return null;
+  while(offDay(k(d)) === why){ last = k(d); d.setDate(d.getDate()+1); }
+  return last;
+}
+
+/* ---------------- pasti fuori casa, o saltati ---------------- */
+/* Le stime sono larghe di proposito: un piatto al ristorante non lo
+   pesi, e fingere due cifre decimali sarebbe solo finta precisione. */
+const FUORI = [
+  { id:"f1",  n:"Colazione al bar",        d:"Cornetto e cappuccino",         k:380,  p:10 },
+  { id:"f2",  n:"Panino o piadina",        d:"Bar, mensa, al volo",           k:600,  p:26 },
+  { id:"f3",  n:"Insalatona fuori",        d:"Con uova, tonno o pollo",       k:480,  p:28 },
+  { id:"f4",  n:"Primo al ristorante",     d:"Pasta o risotto, porzione vera",k:720,  p:20 },
+  { id:"f5",  n:"Secondo e contorno",      d:"Carne o pesce con verdure",     k:560,  p:42 },
+  { id:"f6",  n:"Pizza margherita",        d:"Intera, in pizzeria",           k:850,  p:35 },
+  { id:"f7",  n:"Pizza farcita",           d:"Con salumi o fritti sopra",     k:1150, p:44 },
+  { id:"f8",  n:"Sushi",                   d:"Una barchetta o un all you can",k:800,  p:38 },
+  { id:"f9",  n:"Fast food",               d:"Panino, patatine e bibita",     k:1000, p:34 },
+  { id:"f10", n:"Cena da amici o parenti", d:"Quando non decidi tu",          k:750,  p:32 },
+  { id:"f11", n:"Aperitivo che diventa cena", d:"Stuzzichini e un drink",     k:650,  p:14 },
+  { id:"f12", n:"Non lo so",               d:"Uso il piatto che era in piano",k:0,    p:0  }
+];
+function mStat(key, slot){ const o = ((st.mstat||{})[key]||{})[slot]; return (o && o.t) ? o : null; }
+function setMStat(key, slot, v){
+  st.mstat = st.mstat || {};
+  st.mstat[key] = st.mstat[key] || {};
+  if(v) st.mstat[key][slot] = v; else delete st.mstat[key][slot];
+  if(!Object.keys(st.mstat[key]).length) delete st.mstat[key];
+  pruneMStat();
+}
+function pruneMStat(){
+  if(!st.mstat) return;
+  const lim = addD(todayKey(), -90);
+  Object.keys(st.mstat).forEach(kk=>{ if(kk < lim) delete st.mstat[kk]; });
+}
+function mealFuori(slot, fid){
+  const key = k(cur), F = FUORI.find(x=>x.id===fid); if(!F) return;
+  let kc = F.k, pr = F.p;
+  if(fid === "f12"){ const m = MEALS[dayMeals(key, cur.getDay())[slot]]; kc = m ? m.k : 600; pr = m ? m.p : 25; }
+  setMStat(key, slot, {t:"fuori", k:kc, p:pr, n:F.n});
+  setLock(key, slot, null, false);            /* non ha più senso tenerlo confermato per la spesa */
+  save(); render(); toast(F.n + " · circa " + kc + " kcal");
+}
+function mealSalta(slot){
+  const key = k(cur);
+  setMStat(key, slot, {t:"salto"});
+  setLock(key, slot, null, false);
+  save(); render(); toast("Saltato. Non conta nei totali.");
+}
+function mealTorna(slot){
+  setMStat(k(cur), slot, null); save(); render(); toast("Rimesso in piano");
+}
+/* i numeri di un pasto, tenendo conto di com'è andata davvero */
+function mealVals(key, slot, id){
+  if(offVia(key)) return null;                /* sei via: il piatto non esiste */
+  const ms = mStat(key, slot);
+  if(ms && ms.t === "salto") return {k:0, p:0, c:0, fe:0, eur:0, fuori:true};
+  if(ms && ms.t === "fuori") return {k:ms.k, p:ms.p, c:Math.round(ms.k*0.45/4), fe:0, eur:0, fuori:true};
+  const m = MEALS[id]; if(!m) return null;
+  return {k:m.k, p:m.p, c:mealCarb(id), fe:mealIron(id).mg, eur:mealCost(id), fuori:false};
+}
+/* il pannellino "oggi questo pasto non lo cucino" */
+function opo(s){
+  const box = document.getElementById("out-"+s); if(!box) return;
+  const b = document.querySelector("#mc-"+s+" .mbody"), alt = document.getElementById("alt-"+s);
+  const apri = box.style.display === "none";
+  box.style.display = apri ? "block" : "none";
+  if(apri){ if(b) b.style.display = "none"; if(alt) alt.style.display = "none";
+    document.getElementById("mc-"+s).scrollIntoView({block:"start", behavior:"smooth"}); }
+}
+function outPanel(slot){
+  return '<div class="alt" id="out-' + slot + '" style="display:none">'
+    + '<div class="xs" style="padding:2px 2px 9px">Stime larghe, non pesate: servono a non perdere il filo della giornata, non a essere esatte. '
+    + 'Il pasto esce dalla lista della spesa.</div>'
+    + '<div class="altitem" onclick="mealSalta(\'' + slot + '\')">'
+    + '<div><b style="font-size:14px">Salto questo pasto</b><div class="xs">Non ho fame, o non ho tempo</div></div>'
+    + '<div class="mmac">0 kcal</div></div>'
+    + FUORI.map(f=>'<div class="altitem" onclick="mealFuori(\'' + slot + '\',\'' + f.id + '\')">'
+        + '<div><b style="font-size:14px">' + esc(f.n) + '</b><div class="xs">' + esc(f.d) + '</div></div>'
+        + '<div class="mmac">' + (f.k ? f.k + " kcal<br>" + f.p + " g" : "in piano") + '</div></div>').join("")
+    + '</div>';
+}
+
+/* ---------------- movimento che il piano non aveva previsto ---------------- */
+const PLUS = [
+  { id:"p1", n:"Camminata lunga",  d:"Un'ora buona, o una giornata in giro" },
+  { id:"p2", n:"Bici",             d:"Per andare in giro o per sport" },
+  { id:"p3", n:"Ballo o corso",    d:"Un'ora di qualsiasi cosa faccia sudare" },
+  { id:"p4", n:"Nuoto o piscina",  d:"Vasche vere, non ammollo" },
+  { id:"p5", n:"Sport con amici",  d:"Partita, padel, pallavolo" },
+  { id:"p6", n:"Giornata in piedi",d:"Lavoro fisico, trasloco, una gita" }
+];
+function plusOf(key){ const r = (st.done||{})[key]; return (r && r.plus) || []; }
+function togglePlus(id){
+  const key = k(cur), r = dayRec(key);
+  r.plus = r.plus || [];
+  const i = r.plus.indexOf(id);
+  if(i >= 0) r.plus.splice(i, 1); else r.plus.push(id);
+  save(); render();
+  toast(i >= 0 ? "Tolto" : "Segnato: conta nel consumo");
+}
+function plusCard(){
+  const key = k(cur), L = plusOf(key);
+  if(k(cur) > todayKey()) return "";
+  return '<details class="why" style="margin-top:-4px"><summary>Ho fatto altro movimento'
+    + (L.length ? " · " + L.length : "") + '</summary><div class="dc">'
+    + '<div class="sm">Quello che fai fuori dal piano conta lo stesso, e alza il consumo su cui l\'app calcola le calorie. '
+    + 'Non serve il cronometro: se ti ha fatto sudare o ti ha tenuta in movimento per un\'ora, segnala.</div>'
+    + '<div style="margin-top:10px">' + PLUS.map(x=>{
+        const on = L.indexOf(x.id) >= 0;
+        return '<div class="exhead" style="cursor:pointer" onclick="togglePlus(\'' + x.id + '\')">'
+          + '<span class="cb ' + (on?"on":"") + '"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></span>'
+          + '<span class="exname"><b>' + esc(x.n) + '</b><div class="xs">' + esc(x.d) + '</div></span></div>';
+      }).join("") + '</div></div></details>';
+}
+
+/* ---------------- ti ho vista, o no ---------------- */
+/* Se non apri l'app per una settimana non vuol dire che non ti sei
+   mossa: vuol dire che non me l'hai detto. Abbassarti le calorie in
+   quel caso sarebbe una conclusione inventata. */
+function segnaVista(){
+  st.seen = st.seen || [];
+  const t = todayKey();
+  if(st.seen.indexOf(t) < 0) st.seen.push(t);
+  const lim = addD(t, -40);
+  st.seen = st.seen.filter(x=>x >= lim).sort();
+  save();
+}
+function giorniVisti(n){
+  const lim = addD(todayKey(), -n);
+  return (st.seen||[]).filter(x=>x > lim && x < todayKey()).length;
+}
+
+/* ---------------- la card del giorno in pausa ---------------- */
+function offCard(){
+  const key = k(cur), why = offDay(key);
+  if(!why){
+    if(k(cur) < todayKey()) return "";
+    return '<details class="why" style="margin-top:-4px"><summary>Oggi non ci sono</summary><div class="dc">'
+      + '<div class="sm">Segnare un giorno qui non è una resa: è quello che permette all\'app di non contarlo come un allenamento saltato '
+      + 'e di non calare le calorie per una cosa che non è pigrizia.</div>'
+      + '<div style="margin-top:10px">' + Object.keys(OFF).map(w=>
+          '<div class="altitem" onclick="offChiedi(\'' + w + '\')">'
+          + '<div><b style="font-size:14px">' + OFF[w].n + '</b><div class="xs">' + esc(OFF[w].d) + '</div></div>'
+          + '<div class="mmac">›</div></div>').join("") + '</div></div></details>';
+  }
+  const O = OFF[why], fino = offFino(key);
+  return '<div class="card" style="border-color:' + O.c + '"><div class="row">'
+    + '<span class="bstat" style="color:' + O.c + ';border-color:' + O.c + '">' + O.n + '</span>'
+    + '<span class="xs">' + (fino !== key ? "fino al " + fmtIt(fino) : "solo oggi") + '</span></div>'
+    + '<div class="sm" style="margin-top:9px">' + esc(O.d) + ' '
+    + (why === "via" ? "La lista della spesa salta questi giorni e non ti chiedo di cucinare."
+     : why === "malata" ? "Nessun conto ti viene addebitato: questi giorni escono dal calcolo del consumo."
+     : "Questi giorni non contano come sedute saltate.") + '</div>'
+    + why_(why)
+    + '<div class="g2" style="margin-top:12px">'
+    + '<button class="btn sec" onclick="clearOff(\'' + key + '\')">Oggi ci sono</button>'
+    + '<button class="btn sec" onclick="clearOffRun(\'' + key + '\')">Annulla il periodo</button></div></div>';
+}
+function why_(w){
+  if(w === "via") return why("Le calorie restano visibili come riferimento, ma senza pretese: fuori casa non si pesa niente. "
+    + "L'unica cosa che vale la pena portarsi dietro è la mobilità di cinque minuti, che si fa ovunque. "
+    + "Al ritorno il piano riparte da solo, senza recuperi da fare.");
+  if(w === "malata") return why("Allenarsi con la febbre non anticipa niente e allunga i tempi. Sotto il collo — gola, naso — puoi muoverti piano; "
+    + "dal collo in giù, o con la febbre, si sta fermi. Mangia normale: il corpo che combatte consuma di più, non di meno.");
+  return why("Una pausa decisa è diversa da una pausa subita: dura quello che dici tu e finisce quando lo dici tu. "
+    + "Le settimane di stacco sono parte dei programmi seri, non un fallimento.");
+}
+function offChiedi(why){
+  const g = prompt("Per quanti giorni, da oggi? (1 = solo oggi)", why === "via" ? "7" : "1");
+  if(g === null) return;
+  const n = Math.max(1, Math.min(120, parseInt(g, 10) || 1));
+  setOffRange(todayKey(), addD(todayKey(), n-1), why);
+}
+
+/* ---------------- dodici settimane ---------------- */
+function settimaneDa(){ return st.start ? Math.floor(daysBetween(st.start, todayKey())/7) : 0; }
+function traguardoCard(){
+  const w = settimaneDa();
+  if(w < 12 || st.traguardo12) return "";
+  return '<div class="callout g"><b>Dodici settimane.</b> È il punto in cui un programma va guardato, non continuato per inerzia. '
+    + 'Tre strade, tutte legittime: <b>continui</b> se stai ancora vedendo cambiare qualcosa; '
+    + 'passi a <b>mantenere e tonificare</b> per qualche settimana, che è il modo di consolidare invece di stringere ancora; '
+    + 'oppure ti <b>fermi</b> una settimana e riparti.'
+    + why("Stare in deficit per mesi di fila senza mai risalire è la cosa che porta più gente a mollare, e la meno efficace: "
+        + "il corpo si adatta, il metabolismo scende e la fame sale. Alternare periodi di deficit e periodi di mantenimento "
+        + "fa arrivare più lontano dello stesso deficit tirato all'infinito. Guarda il girovita in Progressi, non la bilancia: "
+        + "se scende ancora, continua; se è fermo da tre settimane e stai seguendo il piano, è il momento di risalire.")
+    + '<div class="g2" style="margin-top:12px">'
+    + '<button class="btn" onclick="setGoal(\'recomp\');chiudiTraguardo()">Passo a mantenere</button>'
+    + '<button class="btn sec" onclick="chiudiTraguardo()">Continuo così</button></div></div>';
+}
+function chiudiTraguardo(){ st.traguardo12 = todayKey(); save(); render(); }
 
 </script>
 <script>
@@ -3327,7 +3726,8 @@ function renderMini(){
 /* ---------------- vista OGGI ---------------- */
 function renderOggi(){
   if(st.mini===true){ renderMini(); return; }
-  const key = k(cur), dow = cur.getDay(), c = cyc(cur), ph = progPhase(cur), plan = WEEK[dow], rec = dayRec(key);
+  const key = k(cur), dow = cur.getDay(), c = cyc(cur), ph = progPhase(cur), plan = planFor(cur), rec = dayRec(key);
+  if(st.offAllena && st.offAllena !== key && st.offAllena !== 1) st.offAllena = 0;
   let h = "";
 
   h += meNudge();
@@ -3340,7 +3740,14 @@ function renderOggi(){
     <div class="sm muted" style="margin-top:9px">${esc(A.f)}</div>${why(A.r)}
     ${(c.conf==="scaduta"||!c.known)?`<button class="btn wide" style="margin-top:11px" onclick="goTab('prog')">Segna il ciclo sul calendario</button>`:""}</div>`;
 
-  if(plan.type === "work"){
+  h += traguardoCard();
+  const OFFOGGI = offDay(key);
+  if(OFFOGGI) h += offCard();
+  if(OFFOGGI && st.offAllena !== key){
+    h += `<div class="card"><h3 style="font-size:20px">Niente allenamento oggi</h3>
+      <div class="sm muted" style="margin-top:7px">Se invece hai voglia, nessuno te lo vieta: i cinque minuti di mobilità qui sotto si fanno ovunque, anche in valigia.</div>
+      <button class="btn sec wide" style="margin-top:12px" onclick="st.offAllena='${key}';save();render()">Fammi vedere la scheda lo stesso</button></div>`;
+  } else if(plan.type === "work"){
     const wid = (ph===1?"gym":"home") + plan.slot;
     const W = WORKOUTS[wid], tot = W.items.length;
     let done = W.items.filter(it=>rec.ex[exSwap(it[0])]).length;
@@ -3379,7 +3786,11 @@ function renderOggi(){
       ${why("Il recupero è parte del piano, non una pausa dal piano: è mentre riposi che il corpo incassa il lavoro delle sedute.")}</div>`;
   }
 
-  if(plan.type !== "work") h += palAnyCard();
+  if(!OFFOGGI) h += moveCard(cur);
+  if(!OFFOGGI && plan.type !== "work") h += palAnyCard();
+  if(!OFFOGGI) h += offCard();
+  h += plusCard();
+  h += attivCard();
 
   if(st.mini===false) h += `<div class="callout"><b>Troppo?</b> C'è una modalità minima: una cosa al giorno, due minuti di impegno, niente conteggi.
     <br><br><button class="btn wide" onclick="setMini(true)">Passa alla modalità minima</button></div>`;
@@ -3475,7 +3886,23 @@ function dayMeals(key, dow){
 function renderCibo(){
   const key=k(cur), dow=cur.getDay(), c=cyc(cur), sel=dayMeals(key,dow);
   const ids=slots();
-  let tk=0, tp=0, te=0; ids.forEach(s=>{ const m=MEALS[sel[s]]; if(m){tk+=m.k; tp+=m.p; te+=mealCost(sel[s]);} });
+  if(offVia(key)){
+    document.getElementById("v-cibo").innerHTML =
+      `<div class="card" style="border-color:var(--sky)"><div class="row">
+         <span class="bstat" style="color:var(--sky);border-color:var(--sky)">Via da casa</span>
+         <span class="xs">fino al ${fmtIt(offFino(key))}</span></div>
+       <div class="sm" style="margin-top:9px">Niente piano per oggi: mangi quello che c'è dove sei, e va benissimo così.</div>
+       ${why("Tre cose che reggono ovunque e non richiedono di contare niente: metti una fonte di proteine in ogni pasto — uova, yogurt, carne, pesce, legumi — perché è quella che protegge il muscolo mentre il resto va come va; "
+           + "prendi verdura o frutta almeno due volte al giorno, che è la cosa che salta per prima quando si mangia fuori; e cammina, perché in viaggio si cammina molto più che a casa e vale più di qualsiasi conto. "
+           + "Qualche giorno sopra le calorie non rovina tre mesi di lavoro: quello che li rovina è smettere del tutto al ritorno perché ci si sente in colpa.")}
+       <div class="g2" style="margin-top:12px">
+         <button class="btn sec" onclick="clearOff('${key}')">Oggi in realtà cucino</button>
+         <button class="btn sec" onclick="clearOffRun('${key}')">Sono tornata</button></div></div>
+       <div class="sec-t">Se vuoi comunque un riferimento</div>
+       <div class="card"><div class="sm">L'obiettivo della giornata resta <b>${c.kcal} kcal</b> con <b>${goal().prot} g</b> di proteine. Usali come bussola, non come regola.</div></div>`;
+    return;
+  }
+  let tk=0, tp=0, te=0; ids.forEach(s=>{ const V=mealVals(key,s,sel[s]); if(V){tk+=V.k; tp+=V.p; te+=V.eur;} });
   const XS=extraSum(key); tk+=XS.k; tp+=XS.p; te+=XS.eur;
   const diff = tk - c.kcal;
   const FE = dayIron(sel);
@@ -3487,12 +3914,26 @@ function renderCibo(){
 
     <div class="xs" style="margin-top:7px">Obiettivo <b style="color:var(--ink)">${c.kcal} kcal</b> · ${c.known?esc(c.n).toLowerCase():"nessuna fase impostata"}${Math.abs(diff)<130?" — sei in linea.":(diff>0?` — sei ${diff} kcal sopra. Va bene se compensi nei prossimi giorni: conta la media della settimana.`:` — sei ${-diff} kcal sotto. Se hai fame, aggiungi uno spuntino.`)}</div></div>`;
 
+  const stime = ids.filter(x=>{ const M=mStat(key,x); return M && M.t==="fuori"; }).length;
+  if(stime) h += `<div class="xs" style="margin:-4px 0 10px">${stime===1?"Un pasto è":"Due o più pasti sono"} fuori casa: da qui in giù i numeri sono stime larghe, non pesate. Servono a non perdere il filo, non a essere esatti.</div>`;
   h += balanceCard(key, dow);
   const SS=season();
   h += `<div class="callout g"><b>Di stagione adesso:</b> ${SS.v}. <b>Frutta:</b> ${SS.f}.</div>`;
 
   ids.forEach(s=>{
     const m = MEALS[sel[s]]; if(!m) return;
+    const MS = mStat(key, s);
+    if(MS){
+      h += `<div class="mcard" id="mc-${s}" style="opacity:.85">
+        <div class="mhead"><div><div class="mslot">${slotName(s)}</div>
+          <div class="mname">${MS.t==="salto" ? "Saltato" : esc(MS.n)}</div>
+          <div class="xs" style="margin-top:5px">${MS.t==="salto" ? "Non conta nei totali della giornata." : "Fuori casa · stima larga, non pesata. Fuori dalla lista della spesa."}</div></div>
+        <div class="mmac">${MS.t==="salto" ? "—" : MS.k + " kcal<br>" + MS.p + " g prot"}</div></div>
+        <div class="macts"><button onclick="mealTorna('${s}')">Rimetti ${esc(m.n.toLowerCase())}</button>
+          <button onclick="opo('${s}')">Cambia</button></div>
+        ${outPanel(s)}</div>`;
+      return;
+    }
     h += `<div class="mcard" id="mc-${s}">
       <div class="mhead" onclick="opm('${s}')">
         <div><div class="mslot">${slotName(s)}</div><div class="mname">${esc(m.n)}</div>
@@ -3516,6 +3957,7 @@ function renderCibo(){
         ${tasteBar(sel[s])}
         <button onclick="opm('${s}')">Ricetta</button>
         <button onclick="opa('${s}')">Scegli tu</button>
+        <button onclick="opo('${s}')">Fuori o salto</button>
         ${isLeftover(key,s) ? `<button onclick="undoDouble('${key}','${s}')">Non è un avanzo</button>`
           : (keeps(sel[s]) ? `<button onclick="cookDouble('${key}','${s}','${sel[s]}')">Cucina doppio</button>` : "")}
       </div>
@@ -3529,7 +3971,7 @@ function renderCibo(){
               <div class="bdgs" style="margin-top:5px">${badges(id).replace('<div class="bdgs">','').replace('</div>','')}${balanceTag(key,dow,s,id)}</div></div>
             <div class="mmac">${a.k} kcal<br>${a.p} g${kcalTag(key,dow,s,id,c.kcal)}</div></div>`;
         }).join("")}
-      </div></div>`;
+      </div>${outPanel(s)}</div>`;
   });
   h += extrasBlock(key);
   h += `<div class="xs" style="margin:14px 0 6px">Le quantità di pasta, riso, avena e pane sono a crudo. I valori hanno un margine di stima del 10%: non serve la precisione al grammo, serve la direzione.</div>`;
@@ -3537,16 +3979,16 @@ function renderCibo(){
 }
 /* ricetta e alternative non stanno aperte insieme: una chiude l'altra */
 function opm(s){
-  const b = document.querySelector("#mc-"+s+" .mbody"), alt = document.getElementById("alt-"+s);
+  const b = document.querySelector("#mc-"+s+" .mbody"), alt = document.getElementById("alt-"+s), o = document.getElementById("out-"+s);
   const apri = b.style.display === "none";
   b.style.display = apri ? "block" : "none";
-  if(apri && alt) alt.style.display = "none";
+  if(apri){ if(alt) alt.style.display = "none"; if(o) o.style.display = "none"; }
 }
 function opa(s){
   const alt = document.getElementById("alt-"+s), b = document.querySelector("#mc-"+s+" .mbody");
   const apri = alt.style.display === "none";
   alt.style.display = apri ? "block" : "none";
-  if(apri && b) b.style.display = "none";
+  if(apri){ if(b) b.style.display = "none"; const o = document.getElementById("out-"+s); if(o) o.style.display = "none"; }
   if(apri) document.getElementById("mc-"+s).scrollIntoView({block:"start", behavior:"smooth"});
 }
 function setMeal(s,id){
@@ -4074,10 +4516,13 @@ function shopList(){
   const start=parseD(weekKey()), bag={};
   for(let i=0;i<7;i++){
     const d=new Date(start); d.setDate(d.getDate()+i); d.setHours(12,0,0,0);
-    const sel=dayMeals(k(d), d.getDay());
+    const dk=k(d);
+    if(offVia(dk)) continue;                            /* quei giorni non sei a casa */
+    const sel=dayMeals(dk, d.getDay());
     slots().forEach(sl=>{
       const id=sel[sl], m=MEALS[id];
       if(!m || id==="p9") return;                       /* il pasto libero non si compra */
+      if(mStat(dk, sl)) return;                         /* quel pasto lo fai fuori, o lo salti */
       m.ing.forEach(raw=>{
         if(noList().some(w=>w && raw.toLowerCase().indexOf(w) >= 0)) return;   /* non lo mangi, non lo compri */
         const it=parseIng(raw);
@@ -4129,6 +4574,15 @@ function renderSpesa(){
     <div class="xs" style="margin-top:8px">Rigenera i sette giorni cercando la combinazione più ricca che ci sta dentro, rispettando calorie e proteine. <b>Sovrascrive i piatti che hai scelto a mano per questa settimana.</b></div>
     ${fitNote()}
     <div class="xs" style="margin-top:9px">I prezzi sono stime da discount italiano. Nel tuo supermercato cambieranno un po': quello che conta è il confronto fra i piatti, non la cifra esatta.</div></div>`;
+
+  const fuoriCasa = shopWeekDays().filter(d=>offVia(k(d))).length;
+  let saltati = 0;
+  shopWeekDays().forEach(d=>slots().forEach(sl=>{ if(!offVia(k(d)) && mStat(k(d), sl)) saltati++; }));
+  if(fuoriCasa || saltati) h += `<div class="callout"><b>La lista è più corta del solito.</b> `
+    + (fuoriCasa ? `${fuoriCasa} giorn${fuoriCasa===1?"o":"i"} sei via da casa` : "")
+    + (fuoriCasa && saltati ? ", e " : "")
+    + (saltati ? `${saltati} past${saltati===1?"o lo fai fuori o lo salti":"i li fai fuori o li salti"}` : "")
+    + `: quegli ingredienti non te li faccio comprare.</div>`;
 
   const order=["Carne","Pesce","Frigo e uova","Legumi","Pane e cereali","Frutta e verdura","Dispensa","Altro"];
   order.filter(a=>L[a]).forEach(a=>{
@@ -4380,9 +4834,16 @@ document.getElementById("bGear").onclick=()=>openSheet("menu");
 document.getElementById("bPrev").onclick=()=>{ cur.setDate(cur.getDate()-1); render(); };
 document.getElementById("bNext").onclick=()=>{ cur.setDate(cur.getDate()+1); render(); };
 document.getElementById("bToday").onclick=()=>{ cur=new Date(); cur.setHours(12,0,0,0); render(); };
+/* il giorno in cui hai aperto l'app la prima volta: serve per non giudicare
+   la tua attività prima che tu abbia avuto il tempo di farne */
+if(!st.start){ st.start = todayKey(); save(); }
+segnaVista();
+pruneOff();
+pruneMStat();
 applySkin();
 fixBlocked();
 pruneLeftovers();
+pruneWplan();
 autoSnap();
 render();
 
