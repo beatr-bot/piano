@@ -293,9 +293,10 @@ details .dc{padding:0 15px 15px}
   border:1px solid currentColor;border-radius:20px;padding:4px 10px;flex:0 0 auto}
 .mbar{display:flex;align-items:center;gap:9px;margin-top:6px;font-size:11px;color:var(--muted)}
 .mbar span{width:78px;flex:0 0 auto}
-.mbar i{flex:1;height:5px;border-radius:5px;background:var(--sage-wash);display:block;overflow:hidden}
+.mbar i{flex:1;height:5px;border-radius:5px;background:var(--sage-wash);display:block;position:relative}
 .mbar i b{display:block;height:100%;border-radius:5px}
-.mbar em{font-style:normal;width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.mbar i u{position:absolute;top:-3px;width:2px;height:11px;border-radius:2px;background:var(--ink);opacity:.42}
+.mbar em{font-style:normal;width:82px;text-align:right;font-variant-numeric:tabular-nums;font-size:10.5px}
 .bdgrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px}
 .bdg{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   border:1px solid currentColor;border-radius:20px;padding:2px 7px;opacity:.9}
@@ -880,7 +881,7 @@ const MEALS = {
     proc:["Soffriggi la cipolla, aggiungi le lenticchie e copri di brodo.", "Cuoci 15 minuti e frulla parzialmente.", "Servi con le uova sode a spicchi e il pane tostato a crostini."] },
   p9: { s:"pra", n:"Pasto libero", k:270, p:11, t:0, eur:6.00, tag:["carb"], sea:"",
     ing:["1 pizza margherita"],
-    proc:["Il pasto libero della settimana. Una pizza, un piatto di pasta fuori, quello che ti va.", "È dentro i conti del piano: non è uno sgarro, è pianificato. Ma pesa 6 € sul budget settimanale — vedi la nota nella scheda Info."] },
+    proc:["Il pasto libero della settimana. Una pizza, un piatto di pasta fuori, quello che ti va.", "È dentro i conti del piano: non è uno sgarro, è pianificato. Ma pesa 6 € sul budget settimanale — vedi la nota nelle impostazioni."] },
   p10: { s:"pra", n:"Pasta al tonno", k:494, p:42, t:20, eur:1.93, tag:["prot", "carb"], sea:"",
     ing:["70 g pasta integrale", "110 g tonno al naturale", "120 g passata di pomodoro", "100 g verdure", "7 g olio EVO", "aglio"],
     proc:["Scalda la passata con aglio e olio.", "Aggiungi il tonno sgocciolato e le verdure a cubetti, cuoci 8 minuti.", "Manteca la pasta nel sugo."] },
@@ -1018,17 +1019,23 @@ const MEALS = {
     proc:["Salta le verdure finché sono morbide.", "Sbatti le uova, versa in padella e distribuisci lo stracchino a fiocchi.", "Cuoci coperto a fuoco basso, gira e completa."] },
 };
 
+/* Sette giornate scelte perché ognuna passa il controllo dell'equilibrio:
+   proteine sopra il tuo obiettivo, carboidrati fra il 33 e il 54% delle
+   calorie, grassi sopra il 21%, ferro sopra i 14 mg, un solo pasto di legumi
+   al giorno e quattro in tutta la settimana. I giorni più ricchi di
+   carboidrati cadono nei tre giorni di pesi. Nessun piatto si ripete. */
 const DAYPLAN = {
-  1:{col:"c1",pra:"p12",spu:"s3",cen:"e11"},
-  2:{col:"c2",pra:"p2",spu:"s5",cen:"e8"},
-  3:{col:"c3",pra:"p3",spu:"s5",cen:"e10"},
-  4:{col:"c4",pra:"p13",spu:"s8",cen:"e5"},
-  5:{col:"c8",pra:"p10",spu:"s9",cen:"e6"},
-  6:{col:"c5",pra:"p6",spu:"s3",cen:"e4"},
-  0:{col:"c7",pra:"p5",spu:"s10",cen:"e1"},
+  1:{col:"c3", pra:"p3",  spu:"s8",  cen:"e7"},    /* pesi A  · 1768 kcal · 116 g · 19,7 mg */
+  2:{col:"c11",pra:"p5",  spu:"s4",  cen:"e17"},   /* passi   · 1644 kcal · 112 g · 16,1 mg */
+  3:{col:"c1", pra:"p1",  spu:"s5",  cen:"e5"},    /* pesi B  · 1650 kcal · 118 g · 17,0 mg */
+  4:{col:"c5", pra:"p10", spu:"s7",  cen:"e4"},    /* zona 2  · 1605 kcal · 113 g · 19,7 mg */
+  5:{col:"c8", pra:"p8",  spu:"s9",  cen:"e10"},   /* pesi C  · 1707 kcal · 112 g · 21,5 mg */
+  6:{col:"c4", pra:"p4",  spu:"s2",  cen:"e13"},   /* zona 2  · 1624 kcal · 112 g · 14,0 mg */
+  0:{col:"c10",pra:"p6",  spu:"s10", cen:"e1"},    /* riposo  · 1635 kcal · 112 g · 14,9 mg */
 };
 
-const SLOTNAME = {col:"Colazione", pra:"Pranzo", spu:"Spuntino", cen:"Cena"};
+const SLOTNAME = {col:"Colazione", pra:"Pranzo", spu:"Spuntino", cen:"Cena", spu2:"Secondo spuntino"};
+function slotName(s){ return SLOTNAME[s] || "Pasto"; }
 
 /* ---------------- PREZZI: listino di partenza, modificabile dall'app ----------------
    Non ho potuto verificare i prezzi Lidl di oggi (gli strumenti web mi sono stati
@@ -1305,9 +1312,18 @@ function buzz(ms){
   if(!palState().vibra) return;
   try{ if(navigator.vibrate) navigator.vibrate(ms || 40); }catch(e){}
 }
-let _wake = null;
-function wakeOn(){ try{ if(navigator.wakeLock) navigator.wakeLock.request("screen").then(s=>{_wake=s;}).catch(()=>{}); }catch(e){} }
-function wakeOff(){ try{ if(_wake){ _wake.release(); _wake=null; } }catch(e){} }
+let _wake = null, _wakeWant = false;
+function wakeOn(){
+  _wakeWant = true;
+  try{ if(navigator.wakeLock) navigator.wakeLock.request("screen")
+    .then(s=>{ if(_wakeWant) _wake = s; else { try{ s.release(); }catch(e){} } }).catch(()=>{}); }catch(e){}
+}
+function wakeOff(){ _wakeWant = false; try{ if(_wake){ _wake.release(); _wake=null; } }catch(e){} }
+/* una notifica o un cambio di scheda fa cadere il blocco: se la sessione
+   è ancora aperta lo si riprende, altrimenti lo schermo si spegne a metà */
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "visible" && _wakeWant && !_wake) wakeOn();
+});
 
 /* ---------------- figura animata ---------------- */
 /* Costruisce la figura una volta sola e restituisce una funzione
@@ -1443,12 +1459,16 @@ function palStart(wid){
 }
 function palStartList(title, items, wid){
   const P = palState();
-  if(!P.name){ toast("Prima dalle un nome, nella scheda Info"); return; }
+  if(!P.name){ toast("Prima dalle un nome: ingranaggio in alto \u2192 Impostazioni"); return; }
   const c = cyc(cur);
+  /* stessi esercizi che vedi nella scheda: se ne hai scartato uno, la
+     compagna non te lo ripropone, e la spunta finisce sullo stesso id */
   const list = items.map(it=>{
+    const id = exSwap(it[0]);
     const d = doseFor(it[1], c.key);
-    return { id:it[0], dose:d, sp:palParse(d), kg:"", best:0, done:false };
-  });
+    return { id:id, dose:d, sp:palParse(d), kg:"", best:0, done:false };
+  }).filter(x=>EX[x.id]);
+  if(!list.length){ toast("Hai scartato tutti gli esercizi di questa scheda"); return; }
   S = { kind:"work", wid:wid, title:title, list:list, q:palQueue(list), qi:0, st:"intro",
         mine:0, hers:0, target:0, rep:0, stopped:false, t0:0, rest:0, secs:0, last:-1,
         sumMine:0, sumPair:0, blocks:0 };
@@ -1462,7 +1482,7 @@ function palStartList(title, items, wid){
 const PAL_QUICK = [["squat",'2 × 40"'],["pushupInc",'2 × 30"'],["ponte",'2 × 30"'],["plank",'2 × 30"']];
 function palNow(){
   const P = palState();
-  if(!P.name){ toast("Prima dalle un nome, nella scheda Info"); return; }
+  if(!P.name){ toast("Prima dalle un nome: ingranaggio in alto \u2192 Impostazioni"); return; }
   S = { kind:"pick", st:"pick", list:[], q:[], qi:0, sumMine:0, sumPair:0, blocks:0 };
   palOpen();
   document.getElementById("palTtl").textContent = P.name;
@@ -1471,7 +1491,7 @@ function palNow(){
 }
 function palPickDo(what){
   if(what === "quick"){ palStartList("Dieci minuti insieme", PAL_QUICK, "quick"); return; }
-  if(what === "mob"){ palStartList("Mobilità spalle", MOBILITY, "mob"); return; }
+  if(what === "mob"){ const mk = mobPick(); palStartList(MOB_SET[mk].n, mobItems(), "mob"); return; }
   palStart(what);
 }
 function palClose(force){
@@ -1544,12 +1564,19 @@ function palDone(){
   palShow();
 }
 function palFinish(partial){
-  const P = palState(), key = k(cur), rec = dayRec(key);
+  /* sempre oggi: la sessione l'hai fatta adesso, anche se nella scheda stavi
+     guardando un altro giorno */
+  const P = palState(), key = todayKey(), rec = dayRec(key);
+  const mob = S.wid === "mob";
   if(!st.log[key]) st.log[key] = {};
   S.list.forEach(it=>{
     if(!it.done) return;
-    rec.ex[it.id] = true;
-    if(it.best || it.kg) st.log[key][it.id] = { w:it.kg||"", r: it.best ? String(it.best) : "" };
+    if(mob) rec.mob[it.id] = true; else rec.ex[it.id] = true;
+    if(it.best || it.kg){
+      const v = st.log[key][it.id] || {};
+      st.log[key][it.id] = { w: it.kg || v.w || "",              /* i giri che avevi scritto restano */
+                             r: it.best ? String(it.best) + (it.sp && it.sp.kind === "hold" ? '"' : "") : (v.r || "") };
+    }
   });
   if(S.blocks > 0){
     P.sessions = (P.sessions||0) + 1;
@@ -1808,7 +1835,7 @@ function palFreeDone(){ S.mine = 1; S.hers = 1; palEnded(); }
 /* ---------------- micro-sessione (modalità minima) ---------------- */
 function palMicro(){
   const P = palState();
-  if(!P.name){ toast("Prima dalle un nome, nella scheda Info"); return; }
+  if(!P.name){ toast("Prima dalle un nome: ingranaggio in alto \u2192 Impostazioni"); return; }
   const key = todayKey(), ix = (st.card||{})[key], card = pickCard();
   const exid = PAL_MICRO_EX[ix === undefined ? 0 : ix];
   S = { kind:"micro", st:"micro", card:card, ex: exid ? EX[exid] : null, secs: card.m*60,
@@ -1832,7 +1859,7 @@ function palTodayCard(wid){
     return '<div class="card" style="border-color:var(--sage-2)">'
       + '<div class="mslot">Non da sola</div>'
       + '<div style="font-family:var(--disp);font-size:21px;line-height:1.2;margin:7px 0 8px">Ti serve qualcuno che tenga il ritmo</div>'
-      + '<div class="sm muted">Da sola non parti, in compagnia sì. Dalle un nome nella scheda <b>Info</b>: si allena con te, ripetizione per ripetizione.</div>'
+      + '<div class="sm muted">Da sola non parti, in compagnia sì. Dalle un nome qui sotto: si allena con te, ripetizione per ripetizione.</div>'
       + '<button class="btn wide acc" style="margin-top:13px" onclick="goInfo()">Creala adesso</button></div>';
   }
   const hist = P.hist || [], lastD = P.last;
@@ -2037,9 +2064,15 @@ function tasteBar(id){
 /* i piatti scartati escono dal pianificatore, ma solo finché restano
    abbastanza alternative per comporre una settimana */
 function allowed(slot){
-  const all = Object.keys(MEALS).filter(id=>MEALS[id].s===slot);
+  const all = Object.keys(MEALS).filter(id=>MEALS[id].s===(slot==="spu2"?"spu":slot));
   const ok = all.filter(id=>tasteOf(id) !== -1 && !noHit(id).block);
   return ok.length >= 3 ? ok : all;
+}
+/* vero quando il ripiego qui sopra è entrato in funzione: sotto i tre piatti
+   l'esclusione smette di valere, e va detto invece che lasciarlo capire */
+function slotStretto(slot){
+  const all = Object.keys(MEALS).filter(id=>MEALS[id].s===(slot==="spu2"?"spu":slot));
+  return all.filter(id=>tasteOf(id) !== -1 && !noHit(id).block).length < 4;
 }
 
 /* ---------------- ho ancora fame ---------------- */
@@ -2106,7 +2139,17 @@ function addNo(){
   const v = (i.value||"").trim().toLowerCase();
   if(!v) return;
   if(noList().indexOf(v) < 0) noList().push(v);
-  i.value = ""; _combos = null; save();
+  i.value = ""; _combos = null;
+  /* una parola troppo generica (olio, latte) svuota mezzo ricettario:
+     meglio dirlo subito e disfare, che lasciarla fare danni in silenzio */
+  const vuoti = ["col","pra","spu","cen"].filter(x=>
+    Object.keys(MEALS).filter(id=>MEALS[id].s===x && tasteOf(id)!==-1 && !noHit(id).block).length < 3);
+  if(vuoti.length){
+    noList().splice(noList().indexOf(v), 1);
+    render();
+    return toast("\"" + v + "\" toglierebbe quasi tutti i piatti: non l'ho aggiunta");
+  }
+  save();
   const n = fixBlocked(); render();
   toast(n ? "Tolto: " + v + " · " + n + (n===1?" piatto cambiato":" piatti cambiati") : "Tolto dal piano: " + v);
 }
@@ -2170,9 +2213,13 @@ function fixBlocked(){
   if(n) save();
   return n;
 }
+/* stessa regola di noHit — prima una usava la parola intera e l'altra la
+   radice, e un ingrediente escluso poteva restare nel piatto senza avviso */
 function noWords(id){
   const m = MEALS[id], hit = [];
-  noList().forEach(w=>{ if(((m.n||"")+" "+(m.ing||[]).join(" ")).toLowerCase().indexOf(w) >= 0) hit.push(w); });
+  if(!m) return hit;
+  const txt = ((m.n||"")+" "+(m.ing||[]).join(" ")).toLowerCase();
+  noList().forEach(w=>{ if(w && hasWord(txt, w)) hit.push(w); });
   return hit;
 }
 function procTxt(p){
@@ -2193,10 +2240,12 @@ function noCard(){
   h += '<div class="shadd" style="margin-top:12px"><input id="noi" placeholder="es. aglio" onkeydown="if(event.key===\'Enter\')addNo()">'
     + '<button class="btn" onclick="addNo()">Togli</button></div>';
   if(sugg.length) h += '<div class="chips" style="margin-top:10px">' + sugg.map(w=>'<span class="chip ghost" onclick="addNoQuick(\'' + w + '\')">+ ' + w + '</span>').join("") + '</div>';
-  const stretti = ["col","pra","spu","cen"].filter(s=>allowed(s).length < 4);
+  const stretti = ["col","pra","spu","cen"].filter(slotStretto);
+  const NOME = {col:"la colazione", pra:"il pranzo", spu:"lo spuntino", cen:"la cena"};
   if(stretti.length) h += '<div class="callout w" style="margin-top:13px"><b>Il ricettario si sta stringendo.</b> '
-    + 'Con queste esclusioni restano pochissimi piatti per ' + stretti.length + (stretti.length===1?' pasto':' pasti')
-    + ': da qui in poi potrei riproporti sempre gli stessi. Dimmelo e aggiungo ricette nuove.</div>';
+    + 'Con queste esclusioni restano pochissimi piatti per ' + stretti.map(x=>NOME[x]).join(", ")
+    + '. Sotto i tre piatti rimasti l\'esclusione smette di valere per quel pasto — altrimenti non avrei niente da proporti — '
+    + 'quindi potresti rivedere comparire qualcosa che avevi tolto. Se succede, togli un\'esclusione o chiedimi ricette nuove.</div>';
   h += '<div class="exhead" style="padding-top:14px;cursor:pointer" onclick="togglePiccante()">'
     + '<span class="cb ' + (st.piccante ? "on" : "") + '"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></span>'
     + '<span class="exname"><b>Mi piace il piccante</b><div class="xs">Aggiunge il peperoncino ai consigli di ogni piatto salato.</div></span></div>';
@@ -2218,10 +2267,27 @@ function me(){
   return st.me;
 }
 function meOk(){ const m = me(); return !!(m.eta && m.cm && m.kg); }
+/* limiti larghi ma veri: servono a fermare gli errori di battitura, non a
+   giudicare nessuno. Il caso tipico non è un peso di 500 kg, è scambiare
+   altezza e peso, o scrivere l'altezza in metri. */
+const ME_LIM = { eta:[14,80], cm:[130,210], kg:[35,200] };
 function setMe(f, v){
   const m = me();
-  if(f === "ferro") m.ferro = !m.ferro;
-  else { const n = parseFloat(String(v).replace(",", ".")); m[f] = (n > 0 ? n : null); }
+  if(f === "ferro"){ m.ferro = !m.ferro; _combos = null; save(); render(); return; }
+  const raw = String(v).replace(",", ".").trim();
+  if(raw === ""){ m[f] = null; _combos = null; save(); render(); return; }
+  const n = parseFloat(raw);
+  if(!(n > 0)){ render(); return toast("Ci va un numero"); }
+  if(f === "cm" && n > 1.2 && n < 2.2){ m.cm = Math.round(n*100); _combos = null; save(); render();
+    return toast("Letto come " + m.cm + " cm"); }
+  const L = ME_LIM[f];
+  if(L && (n < L[0] || n > L[1])){
+    render();
+    return toast(f==="eta" ? "L'eta va fra " + L[0] + " e " + L[1]
+               : f==="cm"  ? "L'altezza va fra " + L[0] + " e " + L[1] + " cm"
+               : "Il peso va fra " + L[0] + " e " + L[1] + " kg");
+  }
+  m[f] = n;
   _combos = null; save(); render();
 }
 
@@ -2272,7 +2338,7 @@ function meCard(){
 function meNudge(){
   if(meOk()) return "";
   return '<div class="callout"><b>Mancano i tuoi dati.</b> Senza età, altezza e peso il piano usa numeri generici. '
-    + 'Si inseriscono in <b>Info</b>, sono tre caselle.<br><br><button class="btn wide" onclick="goInfo()">Compilali adesso</button></div>';
+    + 'Si inseriscono nell\'ingranaggio in alto, in <b>Impostazioni</b>: sono tre caselle.<br><br><button class="btn wide" onclick="goInfo()">Compilali adesso</button></div>';
 }
 
 /* ============================================================
@@ -2335,9 +2401,12 @@ function exNoCardUnused(){
    almeno sei giorni dall'ultimo aumento, e se dici "resto qui" non te lo
    richiedo per due settimane. */
 const UP_WAIT = 6, UP_SNOOZE = 14;
+/* Solo le sedute già chiuse: quella di oggi la stai ancora facendo, e se
+   contasse basterebbe scrivere il peso per farsi dire subito di alzarlo. */
 function lastLogs(id, n){
-  const out = [];
+  const out = [], oggi = todayKey();
   Object.keys(st.log || {}).sort().reverse().forEach(d=>{
+    if(d >= oggi) return;
     const v = (st.log[d] || {})[id];
     if(v && (v.r || v.w) && out.length < n) out.push({d:d, w:parseFloat(String(v.w).replace(",",".")) || 0, r:parseInt(String(v.r).replace(/[^0-9]/g,""),10) || 0});
   });
@@ -2352,8 +2421,13 @@ function targetReps(dose){
   return y ? +y[1] : 0;
 }
 function daysBetween(a, b){ return Math.round((parseD(b) - parseD(a)) / DAYMS); }
+/* Tenute e cardio non si fanno salire di "ripetizioni": 40 secondi di plank
+   finiscono nel diario come 40, e senza questo controllo l'app direbbe
+   "sei arrivata a 40 ripetizioni, oggi prova 42". */
+function isHold(dose){ return /["”]|\bmin\b|\bsec\b/.test(String(dose)); }
 function loadHint(id, dose){
-  const tgt = targetReps(dose); if(!tgt) return null;
+  if(isHold(dose)) return null;
+  const tgt = targetReps(dose); if(!tgt || tgt > 60) return null;
   const L = lastLogs(id, 2); if(L.length < 2) return null;
   if(!(L[0].r >= tgt && L[1].r >= tgt)) return null;
   const today = todayKey();
@@ -2361,11 +2435,15 @@ function loadHint(id, dose){
   if(up && daysBetween(up, today) < UP_WAIT) return null;
   const sn = (st.noUp || {})[id];
   if(sn && daysBetween(sn, today) < UP_SNOOZE) return null;
-  if(L[0].w > 0){
+  /* In fase 2 la casella accanto all'esercizio non sono chili ma giri:
+     lo stesso campo, due significati. Senza questo controllo l'app
+     proporrebbe "4 kg" per uno squat a corpo libero. */
+  if(L[0].w > 0 && progPhase(new Date()) === 1){
     const step = L[0].w < 10 ? 1 : 2;
     return {id:id, kind:"kg", from:L[0].w, to:L[0].w + step, r:L[0].r};
   }
-  return {id:id, kind:"rep", from:L[0].r, to:L[0].r + 2, r:L[0].r};
+  if(L[0].w > 0 && L[0].w < 8) return {id:id, kind:"giri", from:L[0].w, to:L[0].w + 1, r:L[0].r};
+  return {id:id, kind:"rep", from:L[0].r, to:Math.min(L[0].r + 2, tgt + 6), r:L[0].r};
 }
 function takeUp(id){ st.lastUp = st.lastUp || {}; st.lastUp[id] = todayKey(); save(); renderOggi(); toast("Segnato. Se non esce, torni indietro senza problemi."); }
 function skipUp(id){ st.noUp = st.noUp || {}; st.noUp[id] = todayKey(); save(); renderOggi(); toast("Resti lì. Non te lo richiedo per due settimane."); }
@@ -2373,6 +2451,8 @@ function hintBox(id, dose){
   const H = loadHint(id, dose); if(!H) return "";
   const txt = H.kind === "kg"
     ? "Le ultime due volte hai chiuso tutte le ripetizioni con " + H.from + " kg. Oggi prova <b>" + H.to + " kg</b>, e se non escono tutte va bene lo stesso."
+    : H.kind === "giri"
+    ? "Le ultime due volte hai chiuso tutti i giri. Oggi prova a farne <b>" + H.to + "</b>, e se ti fermi prima va bene lo stesso."
     : "Le ultime due volte sei arrivata a " + H.from + " ripetizioni piene. Oggi prova a fare <b>" + H.to + "</b>.";
   return '<div class="callout g" style="margin:12px 0 0"><b>Si può salire.</b> ' + txt
     + '<div class="g2" style="margin-top:11px">'
@@ -2471,7 +2551,7 @@ function renderWeek(){
   });
 
   h += batchCard(D);
-  h += `<div class="xs" style="margin:16px 0 4px">Tocca un giorno per aprirlo. La lista della spesa segue la settimana che inizia di domenica, quindi il sabato sera è il momento giusto per controllarla.</div>`;
+  h += `<div class="xs" style="margin:16px 0 4px">Tocca un giorno per aprirlo. La lista della spesa copre esattamente questi sette giorni, da lunedì a domenica: la domenica sera è il momento giusto per prepararla.</div>`;
   document.getElementById("v-sett").innerHTML = h;
 }
 
@@ -2489,20 +2569,41 @@ function isLeftover(key, slot){ return !!(st.leftover||{})[lfKey(key, slot)]; }
 function cookDouble(key, slot, id){
   const d = parseD(key); d.setDate(d.getDate()+1);
   const nk = k(d);
+  /* un piatto confermato non si tocca: la lista della spesa è già fatta su
+     quello, e cambiarglielo sotto sarebbe esattamente la cosa che il
+     lucchetto promette di non fare. */
+  if(isLocked(nk, slot)) return toast("Il giorno dopo è già confermato: prima togli il lucchetto");
   st.meals = st.meals || {}; st.meals[nk] = st.meals[nk] || {};
   st.meals[nk][slot] = id;
   st.leftover = st.leftover || {}; st.leftover[lfKey(nk, slot)] = 1;
   save(); render();
-  toast("Domani " + SLOTNAME[slot].toLowerCase() + ": lo riscaldi e basta");
+  toast(slotName(slot) + " di " + DAYS[d.getDay()].toLowerCase() + ": lo riscaldi e basta");
+}
+/* l'avanzo vale solo finché il piatto resta quello: se cambia, il cartellino
+   "avanzo di ieri" diventa una bugia */
+function clearLeftover(key, slot){
+  if(st.leftover) delete st.leftover[lfKey(key, slot)];
+}
+function pruneLeftovers(){
+  if(!st.leftover) return;
+  const lim = addD(todayKey(), -28);
+  Object.keys(st.leftover).forEach(kk=>{
+    const key = kk.split("|")[0], slot = kk.split("|")[1];
+    if(key < lim){ delete st.leftover[kk]; return; }
+    const pd = parseD(key); pd.setDate(pd.getDate()-1);
+    const prev = dayMeals(k(pd), pd.getDay()), oggi = dayMeals(key, parseD(key).getDay());
+    if(!prev[slot] || prev[slot] !== oggi[slot]) delete st.leftover[kk];
+  });
 }
 function undoDouble(key, slot){
   if(st.leftover) delete st.leftover[lfKey(key, slot)];
   save(); render(); toast("Tolto l'avanzo");
 }
 function batchCard(D){
-  const rows = [];
+  const rows = [], oggi = todayKey();
   D.forEach(d=>{
     const key = k(d), T = dayTotals(d);
+    if(key < oggi) return;                    /* i giorni passati sono il diario, non si cucina indietro */
     slots().forEach(s=>{
       const id = T.sel[s];
       if(!id || !keeps(id) || isLeftover(key, s)) return;
@@ -2517,7 +2618,7 @@ function batchCard(D){
     <div class="sm">Questi piatti reggono un giorno in frigo e costano tempo. Raddoppia le dosi e la sera dopo scaldi e basta: stessa spesa, mezz'ora in meno.</div>
     ${r.map(x=>`<div class="altitem" onclick="cookDouble('${x.key}','${x.s}','${x.id}')">
       <div><b style="font-size:14px">${esc(MEALS[x.id].n)}</b>
-        <div class="xs">${DAYS[x.d.getDay()].toLowerCase()} · ${SLOTNAME[x.s].toLowerCase()} → avanza per ${DAYS[(x.d.getDay()+1)%7].toLowerCase()}</div></div>
+        <div class="xs">${DAYS[x.d.getDay()].toLowerCase()} · ${slotName(x.s).toLowerCase()} → avanza per ${DAYS[(x.d.getDay()+1)%7].toLowerCase()}</div></div>
       <div class="mmac">${MEALS[x.id].t} min<br><b style="color:var(--ok)">doppio</b></div></div>`).join("")}
   </div>`;
 }
@@ -2673,15 +2774,28 @@ function balanceIf(key, dow, slot, id){
 }
 function balanceCard(key, dow){
   const M = macrosOf(dayMeals(key, dow), key), B = balance(M);
-  const bar = (lab, q, col) => '<div class="mbar"><span>' + lab + '</span><i><b style="width:'
-    + Math.min(100, Math.round(q*100)) + '%;background:' + col + '"></b></i><em>' + Math.round(q*100) + '%</em></div>';
+  /* ogni barra ha la sua tacca: dove dovrebbe stare. Così il numero da solo
+     non deve significare niente — si guarda se la barra arriva alla tacca. */
+  const bar = (lab, q, tick, col, txt) =>
+    '<div class="mbar"><span>' + lab + '</span><i>'
+    + '<b style="width:' + Math.min(100, Math.round(q*100)) + '%;background:' + col + '"></b>'
+    + '<u style="left:calc(' + Math.min(100, Math.round(tick*100)) + '% - 1px)"></u></i>'
+    + '<em>' + txt + '</em></div>';
+  const tp = goal().prot;
+  const pTick = M.kc ? 4*tp/M.kc : 0.25;
+  const it = n => String(Math.round(n*10)/10).replace(".", ",");
   return '<div class="card"><div class="row">'
     + '<span class="bstat" style="color:' + B.c + ';border-color:' + B.c + '">' + B.t + '</span>'
-    + '<span class="xs">' + M.p + ' g prot · ' + M.c + ' g carb · ' + M.f + ' g gras · ' + M.fe + ' mg Fe</span></div>'
+    + '<span class="xs">' + M.kc + ' kcal</span></div>'
     + '<div class="sm" style="margin-top:9px">' + esc(B.d) + '</div>'
     + '<div style="margin-top:11px">'
-    + bar("Proteine", M.pQ, "var(--ok)") + bar("Carboidrati", M.cQ, "var(--sage-2)") + bar("Grassi", M.fQ, "var(--lilac)")
-    + '</div></div>';
+    + bar("Proteine",    M.pQ, pTick, "var(--ok)",     M.p + "/" + tp + " g")
+    + bar("Carboidrati", M.cQ, 0.48,  "var(--sage-2)", M.c + " g · " + Math.round(M.cQ*100) + "%")
+    + bar("Grassi",      M.fQ, 0.28,  "var(--lilac)",  M.f + " g · " + Math.round(M.fQ*100) + "%")
+    + bar("Ferro", M.fe/(IRON_TARGET*1.35), 1/1.35, "var(--clay)", it(M.fe) + "/" + IRON_TARGET + " mg")
+    + '</div>'
+    + '<div class="xs" style="margin-top:9px">La tacca su ogni barra è il punto dove dovrebbe arrivare.</div>'
+    + '</div>';
 }
 /* etichetta piccola per la lista delle alternative:
    compare solo se scegliendo quel piatto la giornata cambia giudizio */
@@ -2740,13 +2854,16 @@ function snapKeys(){
   return out.sort();
 }
 function autoSnap(){
-  try{
-    const kk = SNAP + todayKey();
-    if(localStorage.getItem(kk)) return;
-    localStorage.setItem(kk, JSON.stringify(st));
-    const keys = snapKeys();
-    while(keys.length > 5) localStorage.removeItem(keys.shift());
-  }catch(e){}                                  /* memoria piena: pazienza, non è critico */
+  const kk = SNAP + todayKey();
+  try{ if(localStorage.getItem(kk)) return; }catch(e){ return; }
+  const dati = JSON.stringify(st);
+  /* se la memoria è piena, butta la copia più vecchia e riprova:
+     meglio quattro copie che nessuna */
+  for(let giro=0; giro<5; giro++){
+    try{ localStorage.setItem(kk, dati); break; }
+    catch(e){ const keys = snapKeys(); if(!keys.length) return; try{ localStorage.removeItem(keys[0]); }catch(e2){ return; } }
+  }
+  try{ const keys = snapKeys(); while(keys.length > 5) localStorage.removeItem(keys.shift()); }catch(e){}
 }
 function snapDate(kk){ return kk.slice(SNAP.length); }
 function snapSize(kk){
@@ -2756,8 +2873,8 @@ function restoreSnap(kk){
   let d; try{ d = JSON.parse(localStorage.getItem(kk)); }catch(e){}
   if(!d) return toast("Copia illeggibile");
   if(!confirm("Tornare alla copia del " + fmtIt(snapDate(kk)) + "? Quello che hai fatto dopo si perde.")) return;
-  st = Object.assign({cycles:[], done:{}, log:{}, meals:{}, meas:[], phaseOverride:null,
-                      goal:"cut", prices:{}, shop:{}}, d);
+  st = Object.assign(stVuoto(), d);
+  _combos = null; _mc = null; _mf = null;        /* il pianificatore deve ripartire da zero */
   migrate(); save(); applySkin(); render();
   toast("Ripristinata la copia del " + fmtIt(snapDate(kk)));
 }
@@ -2767,7 +2884,13 @@ function bkDays(){
   if(!st.bkLast) return 999;
   return Math.round((parseD(todayKey()) - parseD(st.bkLast)) / DAYMS);
 }
-function bkDue(){ return bkDays() >= BK_OGNI; }
+/* quanto avresti da perdere: finché non c'è niente dentro, chiedere un
+   backup il primo giorno è solo rumore */
+function bkRoba(){
+  return (st.meas||[]).length + (st.cycles||[]).length
+       + Object.keys(st.done||{}).length + Object.keys(st.log||{}).length;
+}
+function bkDue(){ return bkRoba() >= 6 && bkDays() >= BK_OGNI; }
 function doBackup(){
   expData();
   st.bkLast = todayKey(); save(); render();
@@ -2800,7 +2923,18 @@ function bkCardSet(){
     + '<button class="btn" onclick="doBackup()">Scarica backup</button>'
     + '<label class="btn sec" style="cursor:pointer">Importa<input type="file" accept="application/json" style="display:none" onchange="impData(this)"></label></div>'
     + '</div>';
-  return h;
+  return h + datiCard();
+}
+
+/* ---------------- dove vivono i tuoi dati ---------------- */
+function datiCard(){
+  return '<div class="sec-t">I tuoi dati</div><div class="card">'
+    + '<div class="sm">Tutto quello che segni resta nella memoria del browser di <em>questo</em> dispositivo. '
+    + 'Non passa da nessun server: non lo vede nessuno, nemmeno chi ha scritto l\'app. '
+    + 'Vuol dire però due cose — telefono e computer <b>non sono collegati</b> fra loro, e se cancelli i dati '
+    + 'di navigazione spariscono anche i progressi. Tieni un solo dispositivo come quello "ufficiale".</div>'
+    + '<button class="btn sec wide" style="margin-top:12px;color:#a33" onclick="wipe()">Cancella tutti i dati</button>'
+    + '</div>';
 }
 
 </script>
@@ -2817,19 +2951,26 @@ let st = load();
 let cur = new Date(); cur.setHours(12,0,0,0);
 let view = "oggi";
 
+/* la forma minima che il resto dell'app dà per scontata: qualunque cosa
+   arrivi da una versione vecchia o da un backup viene rivestita di questa,
+   altrimenti la prima schermata muore su una chiave che non c'è */
+function stVuoto(){
+  return { cycles:[], done:{}, log:{}, meals:{}, meas:[], phaseOverride:null,
+           goal:"cut", prices:{}, shop:{}, taste:{}, no:[], lock:{}, leftover:{}, extras:{} };
+}
 function load(){
-  try{ const r = localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){}
+  try{ const r = localStorage.getItem(KEY); if(r) return Object.assign(stVuoto(), JSON.parse(r)); }catch(e){}
   /* recupera i dati di una versione precedente, qualunque nome avesse la chiave */
   try{
     for(let i=0;i<localStorage.length;i++){
       const kk = localStorage.key(i);
       if(kk && kk !== KEY && /^piano.*_v1$/.test(kk)){
         const old = localStorage.getItem(kk);
-        if(old) return JSON.parse(old);
+        if(old) return Object.assign(stVuoto(), JSON.parse(old));
       }
     }
   }catch(e){}
-  return { cycles:[], done:{}, log:{}, meals:{}, meas:[], phaseOverride:null, goal:"cut", prices:{}, shop:{} };
+  return stVuoto();
 }
 function migrate(){
   if(!st.cycles) st.cycles=[];
@@ -2906,7 +3047,7 @@ const PHASES = {
   mes:{n:"Fase mestruale",  cls:"pill-a", food:"In questi giorni il piano spinge su <b>ferro</b> (legumi, uova, manzo, spinaci) sempre abbinato a <b>vitamina C</b>, e su <b>magnesio</b> (avena, mandorle, cacao) che attenua i crampi. Piatti caldi e poco voluminosi, perché la digestione è più pigra.", adv:"Energia bassa e ferro in calo. Tieni la seduta ma taglia il volume del 20–30%: due giri invece di tre. Se stai male, sostituiscila con una camminata — il movimento leggero riduce i crampi, non li peggiora."},
   fol:{n:"Fase follicolare",cls:"pill-g", food:"È la fase in cui gestisci meglio i carboidrati e li usi meglio come benzina: qui il piano mette i piatti più ricchi di pasta, riso e cuscus, e li fa cadere vicino agli allenamenti.", adv:"La finestra migliore del mese: recuperi bene e tolleri più carico. È qui che alzi i pesi, provi il gradino successivo dei push-up e aggiungi il quarto giro."},
   ovu:{n:"Fase ovulatoria", cls:"pill-b", food:"Energia al massimo e appetito regolare: proteine alte e piatti normali. Niente di speciale da correggere, approfittane.", adv:"Picco di forza, ma anche picco di lassità dei legamenti. Approfitta della forza sui movimenti controllati e togli i salti: squat normali invece degli squat jump, e negli affondi bulgari appoggia il piede senza rimbalzare."},
-  lut:{n:"Fase luteale",    cls:"pill-p", food:"Le calorie salgono e il piano vira su <b>magnesio</b> e carboidrati complessi, che alzano la serotonina e spengono la voglia di dolce invece di combatterla. Sale ridotto: limita la ritenzione.", adv:"Mezzo grado di temperatura in più rende tutto più faticoso: mantieni la frequenza ma non aspettarti record. Le calorie salgono a 1.800, non è un cedimento. Sulla bilancia stai guardando acqua, ignorala."}
+  lut:{n:"Fase luteale",    cls:"pill-p", food:"Le calorie salgono e il piano vira su <b>magnesio</b> e carboidrati complessi, che alzano la serotonina e spengono la voglia di dolce invece di combatterla. Sale ridotto: limita la ritenzione.", adv:"Mezzo grado di temperatura in più rende tutto più faticoso: mantieni la frequenza ma non aspettarti record. Le calorie salgono per questi dodici-quattordici giorni, non è un cedimento. Sulla bilancia stai guardando acqua, ignorala."}
 };
 const DAYMS = 86400000;
 const FLOW_DEFAULT = 5;   /* durata presunta finché non ne conosco una tua */
@@ -2963,6 +3104,18 @@ function kcalFor(phaseKey){
   return Math.max(1400, v);                              /* il pavimento resta un limite */
 }
 function protFor(){ return goal().prot; }
+/* da dove esce il numero di oggi: base + fase + correzione dall'andamento */
+function kcalBreak(c){
+  const g = goal();
+  const d = c.key ? (g.delta[c.key]||0) : 0, a = st.kcalAdj||0;
+  if(!d && !a) return "";
+  const p = n => (n>0?"+":"−") + Math.abs(n);
+  let s = '<div class="xs" style="text-align:right;margin-top:-2px">' + g.base + ' di base';
+  if(d) s += ' <b>' + p(d) + '</b> ' + (c.n||"").toLowerCase().replace(/^fase\s+/, "fase ");
+  if(a) s += ' <b>' + p(a) + '</b> dal tuo andamento';
+  if(c.kcal === 1400 && g.base + d + a < 1400) s += ' · fermato al pavimento di 1.400';
+  return s + '</div>';
+}
 function mk(key,day,conf,extra){
   const p=PHASES[key];
   return {known:true, key:key, day:day, conf:conf, kcal:kcalFor(key), n:p.n, cls:p.cls,
@@ -2979,7 +3132,7 @@ function cyc(d){
   }
   const past=S.g.filter(c=> c.s<=ks);
   if(!past.length) return {known:false,kcal:kcalFor(null),n:"Ciclo da registrare",cls:"pill-b",day:null,key:null,conf:null,
-    adv:"Sul calendario qui sotto tocca il primo giorno del ciclo, poi l'ultimo. Puoi farlo anche a ritroso, se te li ricordi. Da due cicli in poi l'app calcola i tuoi intervalli reali e stima le fasi; fino ad allora l'obiettivo resta fisso."};
+    adv:"Il calendario sta nella scheda Progressi, in fondo alla barra: tocca il primo giorno del ciclo, poi l'ultimo. Puoi farlo anche a ritroso, se te li ricordi. Da due cicli in poi l'app calcola i tuoi intervalli reali e stima le fasi; fino ad allora l'obiettivo resta fisso."};
   const last=past[past.length-1];
   const day=dlen(last.s,ks);
   if(S.lens.length<2) return {known:true,kcal:kcalFor(null),n:"Fase non stimabile",cls:"pill-b",day:day,key:null,conf:"nessuna",
@@ -2987,6 +3140,7 @@ function cyc(d){
   /* La fase luteale dura ~12–14 giorni ed è la parte stabile anche nei cicli irregolari:
      l'ovulazione si stima all'indietro dalla lunghezza dei tuoi cicli, non in avanti.
      Ampiezza legata alla tua variabilità, ma limitata a ±5 giorni. */
+  const LUT_MAX = 16;
   const centro=Math.max(10,(S.avg||28)-14), half=Math.min(5,Math.max(2,Math.round((S.varia||4)/2)));
   const ovLo=Math.max(8,centro-half), ovHi=centro+half;
   const wide=(S.varia||0)>=8;
@@ -2994,6 +3148,20 @@ function cyc(d){
     wide?"I tuoi cicli variano parecchio, quindi la stima è larga: prendila come indicazione, non come certezza.":"");
   if(day<=ovHi) return mk("ovu",day, wide?"molto larga":"stimata",
     "Finestra ovulatoria stimata tra il giorno "+ovLo+" e il "+ovHi+(wide?", ampia perché i tuoi cicli variano molto: tieni la cautela sui salti per tutto l'intervallo.":"."));
+  /* La luteale non dura più di ~16 giorni: è la parte fissa del ciclo.
+     Oltre quel limite non sei "in luteale da un mese" — o l'ovulazione è
+     arrivata più tardi della stima, o non c'è stata, o semplicemente non hai
+     ancora segnato il ciclo. In tutti e tre i casi il +150 della luteale non
+     ha più motivo di esserci, e l'obiettivo torna a quello di base. */
+  const lutFine = ovHi + LUT_MAX;
+  if(day > lutFine){
+    const gg = day - lutFine;
+    return {known:true, key:null, kcal:kcalFor(null), n:"Fase da ricalibrare", cls:"pill-b", day:day, conf:"scaduta",
+      food:PHASES.fol.food,
+      adv:"Sono passati " + day + " giorni dall'ultimo inizio che hai segnato, e la fase luteale non dura più di " + LUT_MAX + " giorni: da " + gg + " giorni non ho più una stima attendibile, quindi le calorie sono tornate all'obiettivo di base. "
+        + "Se il ciclo è arrivato e non l'hai registrato, segnalo sul calendario in Progressi e tutto si riallinea in un secondo. "
+        + "Se invece non è arrivato davvero, un ritardo lungo con cicli già irregolari è la cosa che vale la pena portare a un medico — e nel frattempo non scendere con le calorie."};
+  }
   const late=(S.max||0)?day-S.max:0;
   return mk("lut",day,"stimata", late>3
     ? "Sei "+late+" giorni oltre il tuo ciclo più lungo registrato. Con cicli irregolari succede spesso; se il ritardo si allunga molto o si ripete, vale una parola col medico."
@@ -3168,12 +3336,14 @@ function renderOggi(){
   h += `<div class="card" style="border-color:${c.known?"var(--line)":"var(--sage-2)"}">
     <div class="row"><span class="pill ${c.cls}">${esc(c.n)}${c.day?" · giorno "+c.day:""}</span>
     <span class="xs"><b style="color:var(--ink);font-size:14px">${c.kcal}</b> kcal oggi</span></div>
-    <div class="sm muted" style="margin-top:9px">${esc(A.f)}</div>${why(A.r)}</div>`;
+    ${kcalBreak(c)}
+    <div class="sm muted" style="margin-top:9px">${esc(A.f)}</div>${why(A.r)}
+    ${(c.conf==="scaduta"||!c.known)?`<button class="btn wide" style="margin-top:11px" onclick="goTab('prog')">Segna il ciclo sul calendario</button>`:""}</div>`;
 
   if(plan.type === "work"){
     const wid = (ph===1?"gym":"home") + plan.slot;
     const W = WORKOUTS[wid], tot = W.items.length;
-    let done = W.items.filter(it=>rec.ex[it[0]]).length;
+    let done = W.items.filter(it=>rec.ex[exSwap(it[0])]).length;
     h += palTodayCard(wid);
     h += `<div class="sec-t">Allenamento ${plan.slot} · ${ph===1?"palestra":"casa"}</div>
       <div class="card"><div class="row"><h3 style="font-size:20px">${esc(W.t)}</h3>
@@ -3213,7 +3383,7 @@ function renderOggi(){
 
   if(st.mini===false) h += `<div class="callout"><b>Troppo?</b> C'è una modalità minima: una cosa al giorno, due minuti di impegno, niente conteggi.
     <br><br><button class="btn wide" onclick="setMini(true)">Passa alla modalità minima</button></div>`;
-  const MB = mobItems(), mdone = MB.filter(m=>rec.mob[m[0]]).length, mk = mobPick();
+  const MB = mobItems(), mdone = MB.filter(m=>rec.mob[exSwap(m[0])]).length, mk = mobPick();
   h += `<div class="sec-t">Cinque minuti, tutti i giorni</div>
     <div class="card">
     <div class="g2" style="margin-bottom:14px">${Object.keys(MOB_SET).map(x=>`<button class="btn sec" onclick="setMobPick('${x}')"
@@ -3283,8 +3453,8 @@ function tgl(id, isMob){
   save(); renderOggi();
 }
 function tglSteps(){ const r=dayRec(k(cur)); r.steps=!r.steps; save(); renderOggi(); }
-function allMob(){ const r=dayRec(k(cur)), L=mobItems(), all=L.every(m=>r.mob[m[0]]);
-  L.forEach(m=>r.mob[m[0]]=!all); save(); renderOggi(); }
+function allMob(){ const r=dayRec(k(cur)), L=mobItems(), all=L.every(m=>r.mob[exSwap(m[0])]);
+  L.forEach(m=>r.mob[exSwap(m[0])]=!all); save(); renderOggi(); }
 function opn(rid){ const el=document.getElementById("row-"+rid); if(el) el.classList.toggle("open"); }
 function swf(btn, rid, exid, w){
   btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("on")); btn.classList.add("on");
@@ -3325,7 +3495,7 @@ function renderCibo(){
     const m = MEALS[sel[s]]; if(!m) return;
     h += `<div class="mcard" id="mc-${s}">
       <div class="mhead" onclick="opm('${s}')">
-        <div><div class="mslot">${SLOTNAME[s]}</div><div class="mname">${esc(m.n)}</div>
+        <div><div class="mslot">${slotName(s)}</div><div class="mname">${esc(m.n)}</div>
           <div class="bdgrow">${badges(sel[s])}
             ${seasonScore(sel[s])<0 && whySeason(sel[s]) ? `<span class="bdg" style="color:var(--clay)">${esc(whySeason(sel[s]))}</span>` : ""}
             <span class="lockb ${isLocked(key,s)?"on":""}" onclick="event.stopPropagation();toggleLock('${key}','${s}','${sel[s]}')">
@@ -3379,7 +3549,12 @@ function opa(s){
   if(apri && b) b.style.display = "none";
   if(apri) document.getElementById("mc-"+s).scrollIntoView({block:"start", behavior:"smooth"});
 }
-function setMeal(s,id){ const key=k(cur); if(!st.meals[key]) st.meals[key]={}; st.meals[key][s]=id; save(); renderCibo(); toast("Piatto sostituito"); }
+function setMeal(s,id){
+  const key=k(cur); if(!st.meals[key]) st.meals[key]={}; st.meals[key][s]=id;
+  clearLeftover(key, s);                      /* non è più l'avanzo di ieri */
+  const dd=parseD(key); dd.setDate(dd.getDate()+1); clearLeftover(k(dd), s);
+  save(); render(); toast("Piatto sostituito");
+}
 
 /* ---------------- vista PROGRESSI ---------------- */
 function renderProg(){
@@ -3445,17 +3620,11 @@ function renderProg(){
   const rw=rampWeeks();
   h += `<div class="sec-t">Legumi</div><div class="card">
     <div class="sm">Il piano usa legumi 4-5 volte a settimana: sono la proteina più economica che esista e la migliore fonte di ferro vegetale. Ma se non li hai mai mangiati così spesso, partire subito a pieno regime vuol dire due settimane di gonfiore e la voglia di mollare tutto. Il problema non sei tu: è la flora intestinale, che ha bisogno di due o tre settimane per attrezzarsi.</div>
-    ${rw ? `<div class="callout g" style="margin-bottom:0"><b>Settimana ${rw} di 3.</b> Il pianificatore sta tenendo i legumi a un massimo di ${legumeCap()} ${legumeCap()===1?"pasto":"pasti"} a settimana e sale da solo. ${rw===1?"Questa settimana porzioni piccole, circa metà di quelle scritte.":rw===2?"Puoi tornare alle porzioni piene.":"Ultima settimana di rodaggio, poi via libera."}</div>`
+    ${rw ? `<div class="callout g" style="margin-bottom:0"><b>Settimana ${rw} di 3.</b> Il pianificatore sta tenendo i legumi a un massimo di ${legumeCap()} ${legumeCap()===1?"pasto":"pasti"} a settimana e sale da solo. ${rw===1?"Questa settimana porzioni piccole, circa metà di quelle scritte.":rw===2?"Puoi tornare alle porzioni piene.":"Ultima settimana di rodaggio, poi via libera."}
+        <br><br><button class="btn sec wide" onclick="stopRamp()">Chiudi il rodaggio, vado bene così</button></div>`
       : `<div class="callout" style="margin-bottom:0"><b>Tre regole che fanno la differenza.</b> Se usi i secchi, ammollali 12 ore e <b>butta l'acqua dell'ammollo</b>, dove finiscono gli zuccheri che fermentano. Cuocili con <b>alloro, cumino o semi di finocchio</b>, che riducono davvero il gonfiore. E parti dalle <b>vellutate</b>: frullati sono molto più gentili dei ceci interi.
         <br><br><button class="btn wide" style="margin-top:8px" onclick="startRamp()">Avvia le tre settimane di rodaggio</button></div>` }
-  </div>
-
-  <div class="sec-t">I tuoi dati</div>
-    <div class="callout w"><b>Attenzione, leggi questo.</b> Tutto quello che segni resta salvato nella memoria del browser di <em>questo</em> dispositivo. Non passa da nessun server — nessuno lo vede, nemmeno chi ha scritto l'app. Ma questo vuol dire due cose: il telefono e il computer <b>non sono collegati</b> tra loro, e se cancelli i dati di navigazione del browser i progressi spariscono. Esporta un backup ogni tanto, e usa un solo dispositivo come quello "ufficiale".</div>
-    <div class="g2"><button class="btn sec" onclick="expData()">Esporta backup</button>
-    <button class="btn sec" onclick="document.getElementById('imp').click()">Importa backup</button></div>
-    <input type="file" id="imp" accept=".json" style="display:none" onchange="impData(this)">
-    <button class="btn sec wide" style="margin-top:10px;color:#a33" onclick="wipe()">Cancella tutti i dati</button>`;
+  </div>`;
   document.getElementById("v-prog").innerHTML = h;
 }
 let calM=(function(){ const d=new Date(); d.setDate(1); d.setHours(12,0,0,0); return d; })();
@@ -3624,8 +3793,11 @@ function expData(){
 function impData(inp){
   const f=inp.files[0]; if(!f) return; const r=new FileReader();
   r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d||typeof d!=="object") throw 0;
-    st=Object.assign({cycles:[],done:{},log:{},meals:{},meas:[],phaseOverride:null},d); migrate();
-    save(); render(); toast("Backup importato"); }catch(e){ toast("File non valido"); } };
+    /* sostituisce tutto: va chiesto, come per il ripristino di una copia */
+    if(!confirm("Sostituire tutto quello che c'è adesso con il contenuto di questo file? Quello che hai fatto finora si perde.")){ inp.value=""; return; }
+    st=Object.assign(stVuoto(), d); migrate();
+    _combos=null; _mc=null; _mf=null;
+    save(); applySkin(); render(); toast("Backup importato"); }catch(e){ toast("File non valido"); } };
   r.readAsText(f); inp.value="";
 }
 function wipe(){ if(confirm("Cancellare tutti i dati salvati? L'operazione non è reversibile.")){ localStorage.removeItem(KEY); st=load(); render(); toast("Dati cancellati"); } }
@@ -3656,22 +3828,39 @@ let _combos=null, _sig="";
 function bySlot(){
   return {col:allowed("col"), pra:allowed("pra"), spu:allowed("spu"), cen:allowed("cen")};
 }
+/* carboidrati e ferro di ogni piatto si calcolano una volta sola:
+   sono sessanta piatti, ma le combinazioni da filtrare sono cinquantamila */
+let _mc=null;
+function mCarb(id){ if(!_mc) _mc={}; return _mc[id]!==undefined ? _mc[id] : (_mc[id]=mealCarb(id)); }
+let _mf=null;
+function mFe(id){ if(!_mf) _mf={}; return _mf[id]!==undefined ? _mf[id] : (_mf[id]=mealIron(id).mg); }
 function combos(){
   const KMIN=kWin()[0], KMAX=kWin()[1], PMIN=pMin();
-  const sig=KMIN+"|"+KMAX+"|"+PMIN+"|"+JSON.stringify(st.prices||{})+"|"+JSON.stringify(st.taste||{});
+  const sig=KMIN+"|"+KMAX+"|"+PMIN+"|"+JSON.stringify(st.prices||{})+"|"+JSON.stringify(st.taste||{})+"|"+JSON.stringify(st.no||[]);
   if(_combos && _sig===sig) return _combos;
   _sig=sig;
-  const B=bySlot(), out=[], two=slots().indexOf("spu2")>=0;
+  const B=bySlot(), out=[], loose=[], two=slots().indexOf("spu2")>=0, TP=protFor();
   B.col.forEach(c=>B.pra.forEach(a=>B.spu.forEach(s2=>B.cen.forEach(e=>{
     const s3 = two ? (SPU_ALT[s2]||"s3") : null;
     const add2k = two ? MEALS[s3].k : 0, add2p = two ? MEALS[s3].p : 0;
     const k=MEALS[c].k+MEALS[a].k+MEALS[s2].k+MEALS[e].k+add2k;
+    if(k<KMIN || k>KMAX) return;
     const p=MEALS[c].p+MEALS[a].p+MEALS[s2].p+MEALS[e].p+add2p;
-    if(k>=KMIN && k<=KMAX && p>=PMIN)
-      out.push({c:c,a:a,s:s2,e:e,s3:s3,k:k,p:p,fe:mealIron(c).mg+mealIron(a).mg+mealIron(s2).mg+mealIron(e).mg+(two?mealIron(s3).mg:0),
-        eur:mealCost(c)+mealCost(a)+mealCost(s2)+mealCost(e)+(two?mealCost(s3):0)});
+    if(p<PMIN) return;
+    const fe=mFe(c)+mFe(a)+mFe(s2)+mFe(e)+(two?mFe(s3):0);
+    const x={c:c,a:a,s:s2,e:e,s3:s3,k:k,p:p,fe:fe,
+             eur:mealCost(c)+mealCost(a)+mealCost(s2)+mealCost(e)+(two?mealCost(s3):0)};
+    /* la giornata deve reggere anche come equilibrio, non solo come numeri:
+       è lo stesso giudizio che poi leggi sulla scheda. */
+    const ca=mCarb(c)+mCarb(a)+mCarb(s2)+mCarb(e)+(two?mCarb(s3):0);
+    const fat=Math.max(0,(k-4*p-4*ca)/9), cQ=4*ca/k, fQ=9*fat/k;
+    if(p>=TP && cQ<=0.54 && cQ>=0.33 && fQ>=0.21 && fe>=IRON_TARGET*0.78) out.push(x);
+    else loose.push(x);
   }))));
-  _combos=out; return out;
+  /* se i vincoli pieni lasciano troppo poco (pochi piatti rimasti dopo le tue
+     esclusioni), si riapre il campo invece di non proporre niente */
+  _combos = out.length >= 40 ? out : out.concat(loose);
+  return _combos;
 }
 function shuffled(arr){ const x=arr.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
 function comboPhaseScore(x){
@@ -3732,6 +3921,7 @@ function applyWeek(days){
       }
     }
   });
+  pruneLeftovers();                     /* gli avanzi della vecchia settimana non valgono più */
   save();
 }
 function stats(days){
@@ -3744,8 +3934,16 @@ function legumeMeals(x){
 }
 function rampWeeks(){
   if(!st.rampStart) return 0;
-  const d=Math.floor((new Date()-parseD(st.rampStart))/DAYMS);
+  const d=daysBetween(st.rampStart, todayKey());
   return d<0?0 : d<7?1 : d<14?2 : d<21?3 : 0;    /* 0 = fase di abitudine finita */
+}
+function startRamp(){
+  st.rampStart = todayKey(); save(); render();
+  toast("Rodaggio avviato: per tre settimane vado piano con i legumi");
+}
+function stopRamp(){
+  st.rampStart = null; save(); render();
+  toast("Rodaggio chiuso");
 }
 function legumeCap(){ const w=rampWeeks(); return w===1?1 : w===2?2 : w===3?3 : 9; }
 function fitBudget(){
@@ -3768,7 +3966,10 @@ function fitBudget(){
 }
 
 /* ---------------- vista SPESA ---------------- */
-function weekKey(){ const x=new Date(); x.setHours(12,0,0,0); x.setDate(x.getDate()-x.getDay()); return k(x); }
+/* stessa settimana della scheda Settimana: da lunedì a domenica.
+   Prima partiva di domenica, e il sabato sera la lista era già quella
+   dei giorni appena mangiati. */
+function weekKey(){ return k(weekStart(new Date())); }
 function shopRec(){
   const w=weekKey();
   st.shop = st.shop||{};
@@ -3829,17 +4030,6 @@ function mealCost(id){
   let c=0;
   m.ing.forEach(raw=>{ const it=parseIng(raw); c+=priceOf2(it.n,it.q,it.u); });
   return Math.round(c*100)/100;
-}
-function priceOf(name,q,u){
-  for(const [re,pr,un] of PRICES){
-    if(re.test(name)){
-      if(un==="pz") return (q||1)*pr;
-      if(q==null)   return 0.35;                       /* erbe, spezie, condimenti */
-      if(u==="")    { const g=PZ_G[Object.keys(PZ_G).find(x=>name.toLowerCase().includes(x))]||150; return q*g/1000*pr; }
-      return q/1000*pr;
-    }
-  }
-  return 0.30;
 }
 function eur(v){ return "€ "+v.toFixed(2).replace(".",","); }
 function budget(){ return st.budget || 150; }
@@ -4003,7 +4193,20 @@ function resetPrices(){ st.prices={}; _combos=null; save(); render(); toast("Pre
 function shTick(kk){ const R=shopRec(); R.c[kk]=!R.c[kk]; save(); renderSpesa(); }
 function shAdd(){ const i=document.getElementById("shi"); const v=(i.value||"").trim();
   if(!v) return; shopRec().x.push(v); save(); renderSpesa(); toast("Aggiunto"); }
-function shDel(i){ const R=shopRec(); R.x.splice(i,1); R.c={}; save(); renderSpesa(); }
+/* le voci aggiunte a mano sono identificate dalla posizione (x0, x1, ...):
+   togliendone una vanno spostate solo le loro spunte, non tutta la spesa */
+function shDel(i){
+  const R=shopRec(); R.x.splice(i,1);
+  const c={};
+  Object.keys(R.c).forEach(kk=>{
+    const m=/^x(\d+)$/.exec(kk);
+    if(!m){ c[kk]=R.c[kk]; return; }
+    const j=+m[1];
+    if(j===i) return;
+    c["x"+(j>i?j-1:j)]=R.c[kk];
+  });
+  R.c=c; save(); renderSpesa();
+}
 function shReset(){ shopRec().c={}; save(); renderSpesa(); toast("Spunte azzerate"); }
 
 /* ---------------- vista INFO ---------------- */
@@ -4168,12 +4371,18 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("on"));
   document.getElementById("v-"+b.dataset.v).classList.add("on"); window.scrollTo(0,0);
 });
+/* salta a una scheda dal contenuto, non dalla barra */
+function goTab(v){
+  const b = document.querySelector('nav button[data-v="'+v+'"]');
+  if(b) b.click();
+}
 document.getElementById("bGear").onclick=()=>openSheet("menu");
 document.getElementById("bPrev").onclick=()=>{ cur.setDate(cur.getDate()-1); render(); };
 document.getElementById("bNext").onclick=()=>{ cur.setDate(cur.getDate()+1); render(); };
 document.getElementById("bToday").onclick=()=>{ cur=new Date(); cur.setHours(12,0,0,0); render(); };
 applySkin();
 fixBlocked();
+pruneLeftovers();
 autoSnap();
 render();
 
