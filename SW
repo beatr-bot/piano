@@ -1,0 +1,37 @@
+/* Service worker del piano.
+   Obiettivo: l'app si apre e resta identica anche senza rete.
+   Strategia: rispondi subito da quello che hai in cache, e intanto
+   scarica la versione nuova per la prossima apertura. */
+const CACHE = "piano-v1";
+const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icona-192.png", "./icona-512.png"];
+ 
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+});
+self.addEventListener("activate", e => {
+  e.waitUntil(caches.keys()
+    .then(ks => Promise.all(ks.filter(x => x !== CACHE).map(x => caches.delete(x))))
+    .then(() => self.clients.claim()));
+});
+self.addEventListener("fetch", e => {
+  const req = e.request;
+  if(req.method !== "GET") return;
+  const url = new URL(req.url);
+  const isFont = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
+  if(url.origin !== location.origin && !isFont) return;      /* YouTube e il resto passano */
+ 
+  e.respondWith(
+    caches.open(CACHE).then(cache =>
+      cache.match(req, {ignoreSearch:true}).then(hit => {
+        const fresh = fetch(req).then(res => {
+          if(res && (res.ok || res.type === "opaque")) cache.put(req, res.clone());
+          return res;
+        }).catch(() => hit);
+        return hit || fresh;                                  /* prima la cache, poi la rete */
+      })
+    )
+  );
+});
+ 
+
+
